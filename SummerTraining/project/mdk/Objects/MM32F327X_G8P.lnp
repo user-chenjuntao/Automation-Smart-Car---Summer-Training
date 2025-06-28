@@ -1,6 +1,7 @@
 --cpu Cortex-M3
 ".\objects\main.o"
 ".\objects\isr.o"
+".\objects\image_handle.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"

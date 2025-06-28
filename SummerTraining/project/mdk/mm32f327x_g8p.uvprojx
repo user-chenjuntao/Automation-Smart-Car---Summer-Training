@@ -390,6 +390,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\isr.c</FilePath>
             </File>
+            <File>
+              <FileName>image_handle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\image_handle.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -399,6 +404,11 @@
               <FileName>isr.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\isr.h</FilePath>
+            </File>
+            <File>
+              <FileName>image_handle.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\image_handle.h</FilePath>
             </File>
           </Files>
         </Group>
