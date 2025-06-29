@@ -395,6 +395,21 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\image_handle.c</FilePath>
             </File>
+            <File>
+              <FileName>menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\pid.c</FilePath>
+            </File>
+            <File>
+              <FileName>config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\config.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -409,6 +424,21 @@
               <FileName>image_handle.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\image_handle.h</FilePath>
+            </File>
+            <File>
+              <FileName>menu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\menu.h</FilePath>
+            </File>
+            <File>
+              <FileName>pid.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\pid.h</FilePath>
+            </File>
+            <File>
+              <FileName>config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\config.h</FilePath>
             </File>
           </Files>
         </Group>

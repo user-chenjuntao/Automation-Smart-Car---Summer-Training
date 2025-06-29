@@ -35,6 +35,12 @@
 
 #include "zf_common_headfile.h"
 
+
+
+
+#define PIT                     (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
+#define PIT_PRIORITY            (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
 // 第二步 project->clean  等待下方进度条走完
@@ -48,7 +54,11 @@ int main(void)
     debug_init();                                                               // 初始化默认 Debug UART
 
     // 此处编写用户代码 例如外设初始化代码等
-    
+	key_init(10);
+    pit_ms_init(PIT, 1000);                                                     // 初始化 PIT 为周期中断 1000ms 周期
+    interrupt_set_priority(PIT_PRIORITY, 0);                                    // 设置 PIT 对周期中断的中断优先级为 0
+    menu_init();
+	// 此处编写用户代码 例如外设初始化代码等
     // 此处编写用户代码 例如外设初始化代码等
 
     while(1)
