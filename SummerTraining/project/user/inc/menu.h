@@ -3,6 +3,8 @@
 
 #include "zf_common_typedef.h"
 #include "zf_device_ips200.h"
+#include "config.h"
+#include "zf_device_mt9v03x.h"
 
 #include "zf_common_font.h"
 
@@ -20,9 +22,8 @@
 #define STATUSSPEED     31
 #define STATUSSERVO     32
 #define STATUSPID       33
-#define IMAGERAW        41
-#define IMAGEYZ         42
-#define VARIABLE        43
+#define BINARYIMAGE     41
+#define VARIABLE        42
 #define PASPEED         211
 #define PASERVO         221
 #define PAPID           231

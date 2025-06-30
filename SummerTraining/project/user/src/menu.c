@@ -1,5 +1,11 @@
 #include "menu.h"
 
+uint32 straight_speed,turn_speed,init_servo;
+uint32 speed_limit,left_limit,right_limit;
+uint8 threshold_image = 0;
+uint32 encoder_1,encoder_2,angle;
+//uint32 pid[5]={}
+
 //-----------------------------------------
 //一级菜单（主菜单）
 //-----------------------------------------
@@ -40,8 +46,8 @@ menu_item DataStatusMenu = {
 //-----------------------------------------
 menu_item ImageMenu = {
 	.name = "Image",
-	.content = {"ImageRaw","ImageYZ","Variable"},
-	.number = 3,
+	.content = {"BinaryImage","Variable"},
+	.number = 2,
 };
 
 //------------------------------------------------------
@@ -97,6 +103,7 @@ menu_item St_Pid_Menu = {
 
 static uint16 cursor = 1;
 uint8 currentIndex = 1;
+uint8 pastIndex = 0;
 menu_item *currentMenu=&main_Menu;
 
 void moveup(void)
@@ -218,6 +225,7 @@ void menu_display(void)
 {
 	ips200_clear();
 	currentIndex = cursor % 10;
+	pastIndex = cursor / 10;
 	ips200_show_string(0,0,currentMenu->name);
 	for (uint8 i = 0; i < currentMenu->number; i++)
 	{
@@ -231,5 +239,57 @@ void menu_display(void)
 			ips200_show_string(1+i, 3, currentMenu->content[i]);
 		}
 	}
-	
+	switch (pastIndex)
+	{
+		case CARGO:
+			ips200_show_string(1, 17, "start");
+			ips200_show_string(2, 19, "end");
+			break;
+		case PRAMETERSPEED:
+			ips200_show_uint(1, 18, straight_speed, 4);
+			ips200_show_uint(2, 18, turn_speed, 4);
+			ips200_show_uint(3, 18, speed_limit, 4);
+			break;
+		case PRAMETERSERVO:
+			ips200_show_uint(1, 18, init_servo, 4);
+			ips200_show_uint(2, 18, left_limit, 4);
+			ips200_show_uint(3, 18, right_limit, 4);
+			break;
+		case PRAMETERPID:
+			ips200_show_float(1, 16, SpeedPidInitStruct.fKp, 3, 2);
+			ips200_show_float(2, 16, SpeedPidInitStruct.fKi, 3, 2);
+			ips200_show_float(3, 16, SpeedPidInitStruct.fKd, 3, 2);
+			ips200_show_float(4, 16, SpeedPidInitStruct.fMax_Iout, 3, 2);
+			ips200_show_float(5, 16, SpeedPidInitStruct.fMax_Out, 3, 2);
+			break;
+		case STATUSSPEED:
+			ips200_show_uint(1, 18, straight_speed, 4);
+			ips200_show_uint(2, 18, turn_speed, 4);
+			ips200_show_uint(3, 18, speed_limit, 4);
+			break;
+		case STATUSSERVO:
+			ips200_show_uint(1, 18, init_servo, 4);
+			ips200_show_uint(2, 18, left_limit, 4);
+			ips200_show_uint(3, 18, right_limit, 4);
+			break;
+		case STATUSPID:
+			ips200_show_float(1, 16, SpeedPidInitStruct.fKp, 3, 2);
+			ips200_show_float(2, 16, SpeedPidInitStruct.fKi, 3, 2);
+			ips200_show_float(3, 16, SpeedPidInitStruct.fKd, 3, 2);
+			ips200_show_float(4, 16, SpeedPidInitStruct.fMax_Iout, 3, 2);
+			ips200_show_float(5, 16, SpeedPidInitStruct.fMax_Out, 3, 2);
+			break;
+		case IMAGE:
+			ips200_show_uint(1, 18, threshold_image, 4);
+			ips200_show_gray_image(2, 0, mt9v03x_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold_image);
+			ips200_show_string(12, 0, "angle");
+			ips200_show_string(13, 0, "encoder_1");
+			ips200_show_string(14, 0, "encoder_2");
+		    ips200_show_uint(12, 18, angle, 4);
+			ips200_show_uint(13, 18, encoder_1, 4);
+			ips200_show_uint(14, 18, encoder_2, 4);
+		default:
+			break;
+			
+	}
 }

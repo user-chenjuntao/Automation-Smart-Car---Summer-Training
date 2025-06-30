@@ -3,7 +3,7 @@
 tagPID_T Speedpid;
 tagPID_T Anglepid;
 
-PIDInitStruct YawPidInitStruct = 
+PIDInitStruct SpeedPidInitStruct = 
 {
 	.fKp       = 50,     //.fKp
 	.fKi       = 0,     //.fKi
@@ -12,7 +12,7 @@ PIDInitStruct YawPidInitStruct =
 	.fMax_Out  = 10       //.fMax_Out
 };
 
-PIDInitStruct RollPidInitStruct = 
+PIDInitStruct AnglePidInitStruct = 
 {
 	.fKp       = 50,     //.fKp
 	.fKi       = 0,     //.fKi
