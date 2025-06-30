@@ -96,7 +96,7 @@ menu_item St_Pid_Menu = {
 };
 
 static uint16 cursor = 1;
-//uint8 currentIndex = 1;
+uint8 currentIndex = 1;
 menu_item *currentMenu=&main_Menu;
 
 void moveup(void)
@@ -216,5 +216,20 @@ void menu_init(void)
 
 void menu_display(void)
 {
+	ips200_clear();
+	currentIndex = cursor % 10;
+	ips200_show_string(0,0,currentMenu->name);
+	for (uint8 i = 0; i < currentMenu->number; i++)
+	{
+		if (currentIndex == (i+1))
+		{
+			ips200_show_string(1+i, 0, "->");
+			ips200_show_string(1+i, 3, currentMenu->content[i]);
+		}
+		else
+		{
+			ips200_show_string(1+i, 3, currentMenu->content[i]);
+		}
+	}
 	
 }
