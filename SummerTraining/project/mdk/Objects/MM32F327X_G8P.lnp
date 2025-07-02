@@ -5,6 +5,8 @@
 ".\objects\menu.o"
 ".\objects\pid.o"
 ".\objects\config.o"
+".\objects\encoder.o"
+".\objects\motor_control.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"

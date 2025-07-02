@@ -1,9 +1,14 @@
 #include "menu.h"
 
-uint32 straight_speed,turn_speed,init_servo;
-uint32 speed_limit,left_limit,right_limit;
+uint32 straight_speed = 6000,turn_speed = 3000,init_servo = 1500;
+uint32 speed_limit = 9000,left_limit = 500,right_limit = 2500;
 uint8 threshold_image = 0;
-uint32 encoder_1,encoder_2,angle;
+uint32 angle;
+float level[5] = {100,10,1,0.1,0.01};
+static uint8 level_i = 0;
+extern int16 encoder_data_1;
+extern int16 encoder_data_2;
+extern int8 duty_pwm;
 //uint32 pid[5]={}
 
 //-----------------------------------------
@@ -102,24 +107,24 @@ menu_item St_Pid_Menu = {
 };
 
 static uint16 cursor = 1;
-uint8 currentIndex = 1;
-uint8 pastIndex = 0;
+static uint8 currentIndex = 1;
+static uint8 pastIndex = 0;
 menu_item *currentMenu=&main_Menu;
 
 void moveup(void)
 {
-    if (cursor>1)
+    if (cursor> 1 + (cursor - cursor % 10))
     cursor--;
     else
-    cursor=currentMenu->number;
+    cursor= (cursor - cursor % 10) + currentMenu->number;
 }
 
 void movedown(void)
 {
-    if (cursor<currentMenu->number)
+    if (cursor < currentMenu->number + (cursor - cursor % 10))
     cursor++;
     else
-    cursor=1;
+    cursor=1 + (cursor - cursor % 10);
 }
 
 void getin(void)
@@ -143,13 +148,13 @@ void getin(void)
 			    break;
 			
 			case PRAMETERSPEED:
-				currentMenu = &DataParameter_Menu;
+				currentMenu = &Pa_Speed_Menu;
 				break;
 			case PRAMETERSERVO:
-				currentMenu = &DataParameter_Menu;
+				currentMenu = &Pa_Servo_Menu;
 				break;
 			case PRAMETERPID:
-				currentMenu = &DataParameter_Menu;
+				currentMenu = &Pa_Pid_Menu;
 				break;
 			case STATUSSPEED:
 				currentMenu = &St_Speed_Menu;
@@ -165,6 +170,10 @@ void getin(void)
                 break;
         }
         cursor = cursor * 10 + 1;
+		if (cursor > 1000)
+		{
+			cursor = (cursor - 1) / 10;
+		}
     }
 }
 
@@ -172,7 +181,7 @@ void getout(void)
 {
 	if (cursor > 10)
 	{
-		cursor = cursor % 10;
+		cursor = cursor / 10;
 		switch (cursor)
         {
             case CARGO:
@@ -189,13 +198,13 @@ void getout(void)
 			    break;
 			
 			case PRAMETERSPEED:
-				currentMenu = &Pa_Speed_Menu;
+				currentMenu = &DataParameter_Menu;
 				break;
 			case PRAMETERSERVO:
-				currentMenu = &Pa_Servo_Menu;
+				currentMenu = &DataParameter_Menu;
 				break;
 			case PRAMETERPID:
-				currentMenu = &Pa_Pid_Menu;
+				currentMenu = &DataParameter_Menu;
 				break;
 			case STATUSSPEED:
 				currentMenu = &DataStatusMenu;
@@ -218,12 +227,12 @@ void menu_init(void)
 	ips200_set_dir(IPS200_PORTAIT);
     ips200_set_font(IPS200_8X16_FONT);
     ips200_set_color(RGB565_WHITE, RGB565_BLACK);
-    ips200_init(IPS200_TYPE);
+    ips200_init(IPS200_TYPE_SPI);
 }
 
 void menu_display(void)
 {
-	ips200_clear();
+//	ips200_clear();
 	currentIndex = cursor % 10;
 	pastIndex = cursor / 10;
 	ips200_show_string(0,0,currentMenu->name);
@@ -231,65 +240,235 @@ void menu_display(void)
 	{
 		if (currentIndex == (i+1))
 		{
-			ips200_show_string(1+i, 0, "->");
-			ips200_show_string(1+i, 3, currentMenu->content[i]);
+			ips200_show_string(0, 16+i*16, "->");
+			ips200_show_string(24, 16+i*16, currentMenu->content[i]);
 		}
 		else
 		{
-			ips200_show_string(1+i, 3, currentMenu->content[i]);
+			ips200_show_string(0, 16+i*16, "  ");
+			ips200_show_string(24, 16+i*16, currentMenu->content[i]);
 		}
+	}
+	
+	ips200_show_string(0, 224, "cursor");
+	ips200_show_uint(200, 224, cursor, 3);
+	if (cursor <100)
+	{
+		ips200_show_string(0, 300, "E5:OUT|E4:IN|E3:DOWN|E2:UP");
 	}
 	switch (pastIndex)
 	{
+		case MAIN:
+//			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
+			break;
 		case CARGO:
-			ips200_show_string(1, 17, "start");
-			ips200_show_string(2, 19, "end");
+			ips200_show_string(192, 16, "start");
+			ips200_show_string(208, 32, "end");
+//			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
-			ips200_show_uint(1, 18, straight_speed, 4);
-			ips200_show_uint(2, 18, turn_speed, 4);
-			ips200_show_uint(3, 18, speed_limit, 4);
+			ips200_show_int(200, 16, duty_pwm, 4);
+			ips200_show_uint(200, 32, turn_speed, 4);
+			ips200_show_uint(200, 48, speed_limit, 4);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case PRAMETERSERVO:
-			ips200_show_uint(1, 18, init_servo, 4);
-			ips200_show_uint(2, 18, left_limit, 4);
-			ips200_show_uint(3, 18, right_limit, 4);
+			ips200_show_uint(200, 16, init_servo, 4);
+			ips200_show_uint(200, 32, left_limit, 4);
+			ips200_show_uint(200, 48, right_limit, 4);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case PRAMETERPID:
-			ips200_show_float(1, 16, SpeedPidInitStruct.fKp, 3, 2);
-			ips200_show_float(2, 16, SpeedPidInitStruct.fKi, 3, 2);
-			ips200_show_float(3, 16, SpeedPidInitStruct.fKd, 3, 2);
-			ips200_show_float(4, 16, SpeedPidInitStruct.fMax_Iout, 3, 2);
-			ips200_show_float(5, 16, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_float(184, 16, SpeedPidInitStruct.fKp, 3, 2);
+			ips200_show_float(184, 32, SpeedPidInitStruct.fKi, 3, 2);
+			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
+			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
+			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSSPEED:
-			ips200_show_uint(1, 18, straight_speed, 4);
-			ips200_show_uint(2, 18, turn_speed, 4);
-			ips200_show_uint(3, 18, speed_limit, 4);
+			ips200_show_int(200, 16, duty_pwm, 4);
+			ips200_show_uint(200, 32, turn_speed, 4);
+			ips200_show_uint(200, 48, speed_limit, 4);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSSERVO:
-			ips200_show_uint(1, 18, init_servo, 4);
-			ips200_show_uint(2, 18, left_limit, 4);
-			ips200_show_uint(3, 18, right_limit, 4);
+			ips200_show_uint(200, 16, init_servo, 4);
+			ips200_show_uint(200, 32, left_limit, 4);
+			ips200_show_uint(200, 48, right_limit, 4);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSPID:
-			ips200_show_float(1, 16, SpeedPidInitStruct.fKp, 3, 2);
-			ips200_show_float(2, 16, SpeedPidInitStruct.fKi, 3, 2);
-			ips200_show_float(3, 16, SpeedPidInitStruct.fKd, 3, 2);
-			ips200_show_float(4, 16, SpeedPidInitStruct.fMax_Iout, 3, 2);
-			ips200_show_float(5, 16, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_float(184, 16, SpeedPidInitStruct.fKp, 3, 2);
+			ips200_show_float(184, 32, SpeedPidInitStruct.fKi, 3, 2);
+			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
+			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
+			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_string(0, 208, "level");
+			ips200_show_float(184, 208, level[level_i], 3, 2);
+			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case IMAGE:
-			ips200_show_uint(1, 18, threshold_image, 4);
-			ips200_show_gray_image(2, 0, mt9v03x_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold_image);
-			ips200_show_string(12, 0, "angle");
-			ips200_show_string(13, 0, "encoder_1");
-			ips200_show_string(14, 0, "encoder_2");
-		    ips200_show_uint(12, 18, angle, 4);
-			ips200_show_uint(13, 18, encoder_1, 4);
-			ips200_show_uint(14, 18, encoder_2, 4);
+			ips200_show_uint(200, 16, threshold_image, 4);
+			ips200_show_gray_image(0, 50, mt9v03x_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold_image);
+			ips200_show_string(0, 240, "angle");
+			ips200_show_string(0, 256, "encoder_1");
+			ips200_show_string(0, 272, "encoder_2");
+		    ips200_show_uint(200, 240, angle, 4);
+			ips200_show_int(200, 256, encoder_data_1, 4);
+			ips200_show_int(200, 272, encoder_data_2, 4);
+//			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 		default:
 			break;
 			
+	}
+}
+
+
+
+void menu_switch(void)
+{
+
+	if (cursor < 100)
+	{
+		if (key_get_state(KEY_1) == 1)
+		{
+			moveup();
+			key_clear_state(KEY_1);
+		}
+		else if (key_get_state(KEY_2) == 1)
+		{
+			movedown();
+			key_clear_state(KEY_2);
+		}
+		if (key_get_state(KEY_3) == 1)
+		{
+			getin();
+			key_clear_state(KEY_3);
+			ips200_clear();
+		}
+		else if (key_get_state(KEY_4) == 1)
+		{
+			getout();
+			key_clear_state(KEY_4);
+			ips200_clear();
+		}
+	}
+	else if (cursor > 100)
+	{
+		if (key_get_state(KEY_1) == 1)
+		{
+			moveup();
+			key_clear_state(KEY_1);
+		}
+		else if (key_get_state(KEY_1) == 2)
+		{
+			getout();
+			key_clear_state(KEY_1);
+			ips200_clear();
+		}
+		if (key_get_state(KEY_2) == 1)       //数值加
+		{
+			switch (cursor)
+			{
+				case 211:
+					duty_pwm += (uint32)level[level_i];
+					break;
+				case 212:
+					turn_speed += (uint32)level[level_i];
+					break;
+				case 213:
+					speed_limit += (uint32)level[level_i];
+					break;
+				case 221:
+					init_servo += (uint32)level[level_i];
+					break;
+				case 222:
+					left_limit += (uint32)level[level_i];
+					break;
+				case 223:
+					right_limit += (uint32)level[level_i];
+					break;
+				case 231:
+					SpeedPidInitStruct.fKp +=level[level_i];
+					break;
+				case 232:
+					SpeedPidInitStruct.fKi +=level[level_i];
+					break;
+				case 233:
+					SpeedPidInitStruct.fKd +=level[level_i];
+					break;
+				case 234:
+					SpeedPidInitStruct.fMax_Iout +=level[level_i];
+					break;
+				case 235:
+					SpeedPidInitStruct.fMax_Out +=level[level_i];
+					break;
+				default:
+					break;
+			}
+			key_clear_state(KEY_2);
+		}
+		else if (key_get_state(KEY_3) == 1)  //数值减
+		{
+			switch (cursor)
+			{
+				case 211:
+					duty_pwm -= (uint32)level[level_i];
+					break;
+				case 212:
+					turn_speed -= (uint32)level[level_i];
+					break;
+				case 213:
+					speed_limit -= (uint32)level[level_i];
+					break;
+				case 221:
+					init_servo -= (uint32)level[level_i];
+					break;
+				case 222:
+					left_limit -= (uint32)level[level_i];
+					break;
+				case 223:
+					right_limit -= (uint32)level[level_i];
+					break;
+				case 231:
+					SpeedPidInitStruct.fKp -=level[level_i];
+					break;
+				case 232:
+					SpeedPidInitStruct.fKi -=level[level_i];
+					break;
+				case 233:
+					SpeedPidInitStruct.fKd -=level[level_i];
+					break;
+				case 234:
+					SpeedPidInitStruct.fMax_Iout -=level[level_i];
+					break;
+				case 235:
+					SpeedPidInitStruct.fMax_Out -=level[level_i];
+					break;
+				default:
+					break;
+			}
+			key_clear_state(KEY_3);
+		}
+		if (key_get_state(KEY_4) == 1)
+		{
+			level_i++;
+			if (level_i > 4)
+			{
+				level_i = 0;
+			}
+			key_clear_state(KEY_4);
+		}
 	}
 }

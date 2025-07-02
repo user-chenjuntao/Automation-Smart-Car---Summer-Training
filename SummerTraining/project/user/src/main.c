@@ -38,8 +38,22 @@
 
 
 
-#define PIT                     (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
-#define PIT_PRIORITY            (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+#define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
+#define PIT_PRIORITY                (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+#define PIT_ENCODER                 (TIM2_PIT) 
+#define ENCODER_1                   (TIM3_ENCODER)
+#define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
+#define ENCODER_1_B                 (TIM3_ENCODER_CH2_B5)
+
+#define ENCODER_2                   (TIM4_ENCODER)
+#define ENCODER_2_A                 (TIM4_ENCODER_CH1_B6)
+#define ENCODER_2_B                 (TIM4_ENCODER_CH2_B7)
+
+
+int16 encoder_data_1 = 0;
+int16 encoder_data_2 = 0;
+int8 duty_pwm;
+
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
@@ -54,18 +68,53 @@ int main(void)
     debug_init();                                                               // 初始化默认 Debug UART
 
     // 此处编写用户代码 例如外设初始化代码等
-	key_init(10);
-    pit_ms_init(PIT, 1000);                                                     // 初始化 PIT 为周期中断 1000ms 周期
-    interrupt_set_priority(PIT_PRIORITY, 0);                                    // 设置 PIT 对周期中断的中断优先级为 0
+	encoder_quad_init(ENCODER_1, ENCODER_1_A, ENCODER_1_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
+    encoder_quad_init(ENCODER_2, ENCODER_2_A, ENCODER_2_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
+	motor_init();
+	key_init(50);
+    pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 50ms 周期
+	pit_ms_init(PIT_ENCODER, 100);
+    interrupt_set_priority(PIT_PRIORITY, 3);                                    // 设置 PIT 对周期中断的中断优先级为 3
     menu_init();
+	while(1)
+    {
+        if(mt9v03x_init())
+        {
+            ips200_show_string(0, 16, "mt9v03x reinit.");
+        }
+        else
+        {
+            break;
+        }
+        system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
+    }
+    ips200_show_string(0, 16, "init success.");
+	system_delay_ms(1000);  
+	ips200_clear();
 	// 此处编写用户代码 例如外设初始化代码等
     // 此处编写用户代码 例如外设初始化代码等
 
     while(1)
     {
         // 此处编写需要循环执行的代码
-        
+        menu_switch();
+		menu_display();
+		motor_pwm(duty_pwm);
         // 此处编写需要循环执行的代码
     }
 }
 // **************************** 代码区域 ****************************
+
+void pit_encoder_handler (void)
+{
+    encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
+    encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
+
+    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
+    encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
+}
+
+void pit_key_handler (void)
+{
+    key_scanner();                                                              // 周期中断触发 标志位置位
+}

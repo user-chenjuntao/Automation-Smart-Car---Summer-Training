@@ -38,6 +38,7 @@
 
 #include "zf_common_headfile.h"
 
-void pit_key_handler (void);
+
+
 
 #endif
