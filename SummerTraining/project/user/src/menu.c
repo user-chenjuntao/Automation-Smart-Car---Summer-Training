@@ -2,7 +2,7 @@
 
 uint32 straight_speed = 6000,turn_speed = 3000,init_servo = 1500;
 uint32 speed_limit = 9000,left_limit = 500,right_limit = 2500;
-uint8 threshold_image = 0;
+extern uint8 image_threshold;
 uint32 angle;
 float level[5] = {100,10,1,0.1,0.01};
 static uint8 level_i = 0;
@@ -319,8 +319,8 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case IMAGE:
-			ips200_show_uint(200, 16, threshold_image, 4);
-			ips200_show_gray_image(0, 50, mt9v03x_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, threshold_image);
+			ips200_show_uint(200, 16, image_threshold, 4);
+			ips200_show_gray_image(0, 50, mt9v03x_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, image_threshold);
 			ips200_show_string(0, 240, "angle");
 			ips200_show_string(0, 256, "encoder_1");
 			ips200_show_string(0, 272, "encoder_2");

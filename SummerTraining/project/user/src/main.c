@@ -53,6 +53,7 @@
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
 int8 duty_pwm;
+uint8 image_threshold = 0;
 
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
@@ -97,6 +98,7 @@ int main(void)
     while(1)
     {
         // 此处编写需要循环执行的代码
+		image_threshold = otsuThreshold(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
         menu_switch();
 		menu_display();
 		motor_pwm(duty_pwm);
@@ -117,4 +119,5 @@ void pit_encoder_handler (void)
 void pit_key_handler (void)
 {
     key_scanner();                                                              // 周期中断触发 标志位置位
+	
 }

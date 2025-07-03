@@ -7,6 +7,7 @@
 #include "zf_device_mt9v03x.h"
 #include "zf_device_key.h"
 
+
 #include "zf_common_font.h"
 
 //#define IPS200_TYPE     (IPS200_TYPE_PARALLEL8)                                 // 双排排针 并口两寸屏 这里宏定义填写 IPS200_TYPE_PARALLEL8
