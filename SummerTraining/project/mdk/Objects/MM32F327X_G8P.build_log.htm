@@ -27,7 +27,16 @@ Project File Date:  07/01/2025
 <h2>Output:</h2>
 *** Using Compiler 'V6.23', folder: 'D:\Keil_2025\Keil_v5\ARM\ARMCLANG\Bin'
 Build target 'mm32f327x_g8p_project'
-".\Objects\MM32F327X_G8P.axf" - 0 Error(s), 0 Warning(s).
+../user/src/image_handle.c(216): warning: cast to 'uint8 *' (aka 'unsigned char *') from smaller integer type 'uint8' (aka 'unsigned char') [-Wint-to-pointer-cast]
+  216 |     uint8 *p = (uint8 *)image[0];                          // ͼ<CF><F1><CA><FD><D7><E9>ָ<D5><EB>
+      |                ^~~~~~~~~~~~~~~~~
+1 warning generated.
+compiling image_handle.c...
+compiling main.c...
+compiling isr.c...
+linking...
+Program Size: Code=40768 RO-data=3852 RW-data=5188 ZI-data=32784  
+".\Objects\MM32F327X_G8P.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -40,7 +49,7 @@ Package Vendor: MindMotion
   D:/Keil_2025/Arm/Packs/MindMotion/MM32F3270_DFP/1.0.5/Device/MM32F327x/Include
 
 <h2>Collection of Component Files used:</h2>
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:25
 </pre>
 </body>
 </html>

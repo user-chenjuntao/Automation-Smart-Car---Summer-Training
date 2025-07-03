@@ -54,6 +54,7 @@ int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
 int8 duty_pwm;
 uint8 image_threshold = 0;
+extern uint8 reference_point;
 
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
