@@ -134,6 +134,7 @@
 #include "pid.h"
 #include "config.h"
 #include "motor_control.h"
+#include "image_test.h"
 //===================================================用户自定义文件===================================================
 
 #endif

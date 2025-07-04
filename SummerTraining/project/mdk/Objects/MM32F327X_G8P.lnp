@@ -7,6 +7,7 @@
 ".\objects\config.o"
 ".\objects\encoder.o"
 ".\objects\motor_control.o"
+".\objects\image_test.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"

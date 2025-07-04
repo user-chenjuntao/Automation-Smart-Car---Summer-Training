@@ -1,5 +1,6 @@
 #include "motor_control.h"
 
+
 void motor_init(void)
 {
 	
@@ -9,6 +10,12 @@ void motor_init(void)
 
     gpio_init(DIR_R, GPO, GPIO_HIGH, GPO_PUSH_PULL);                            // GPIO 初始化为输出 默认上拉输出高
     pwm_init(PWM_R, 17000, 0);                                                  // PWM 通道初始化频率 17KHz 占空比初始为 0
+	
+}
+
+void servo_init(void)
+{
+	pwm_init(SERVO_MOTOR_PWM, SERVO_MOTOR_FREQ, 0);
 	
 }
 
@@ -41,4 +48,9 @@ void motor_pwm(int8 duty)
      }
 	 
 
+}
+
+void servo_pwm(float servo_motor_duty)
+{
+	pwm_set_duty(SERVO_MOTOR_PWM, (uint32)SERVO_MOTOR_DUTY(servo_motor_duty));
 }

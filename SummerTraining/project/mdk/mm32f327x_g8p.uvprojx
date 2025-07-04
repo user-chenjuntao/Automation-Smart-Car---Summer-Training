@@ -424,6 +424,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\motor_control.c</FilePath>
             </File>
+            <File>
+              <FileName>image_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\image_test.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -463,6 +468,11 @@
               <FileName>motor_control.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\motor_control.h</FilePath>
+            </File>
+            <File>
+              <FileName>image_test.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\image_test.h</FilePath>
             </File>
           </Files>
         </Group>

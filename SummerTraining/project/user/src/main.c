@@ -40,7 +40,7 @@
 
 #define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY                (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
-#define PIT_ENCODER                 (TIM2_PIT) 
+#define PIT_ENCODER                 (TIM7_PIT) 
 #define ENCODER_1                   (TIM3_ENCODER)
 #define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
 #define ENCODER_1_B                 (TIM3_ENCODER_CH2_B5)
@@ -53,7 +53,8 @@
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
 int8 duty_pwm;
-uint8 image_threshold = 0;
+float angle_servo = 90.0;
+//uint8 image_threshold = 0;
 extern uint8 reference_point;
 
 
@@ -78,6 +79,7 @@ int main(void)
 	pit_ms_init(PIT_ENCODER, 100);
     interrupt_set_priority(PIT_PRIORITY, 3);                                    // 设置 PIT 对周期中断的中断优先级为 3
     menu_init();
+	servo_init();
 	while(1)
     {
         if(mt9v03x_init())
@@ -99,10 +101,11 @@ int main(void)
     while(1)
     {
         // 此处编写需要循环执行的代码
-		image_threshold = otsuThreshold(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
+//		image_threshold = otsuThreshold_less(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
         menu_switch();
 		menu_display();
 		motor_pwm(duty_pwm);
+		servo_pwm(angle_servo);
         // 此处编写需要循环执行的代码
     }
 }

@@ -54,7 +54,7 @@ void sobelAutoThreshold(const uint8 image_mt[MT9V03X_H/2][MT9V03X_W],uint8 targe
 //-------------------------------------------------------------------------------------
 //使用大津法进行二值化处理
 //-------------------------------------------------------------------------------------
-uint8 otsuThreshold(uint8 *image, uint16 width, uint16 height)
+uint8 otsuThreshold_less(uint8 *image, uint16 width, uint16 height)
 {
     
     int pixel_count[GrayScale] = {0};//每个灰度值所占像素个数
