@@ -6,44 +6,16 @@
 //------------------------------------------------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------------------------------------------------
-//函数名称：int my_abs(int value)
-//功能说明：求绝对值
-//------------------------------------------------------------------------------------------------------------------
-
-int my_abs(int value)
-{
-if(value>=0) return value;
-else return -value;
-}
-
-int16 limit_a_b(int16 x, int a, int b)
-{
-    if(x<a) x = a;
-    if(x>b) x = b;
-    return x;
-}
-
-//------------------------------------------------------------------------------------------------------------------
-//函数名称：int16 limit(int16 x, int16 y)
-//功能说明：求x,y中的最小值
-//函数返回：返回两值中的最小值
-//------------------------------------------------------------------------------------------------------------------
-int16 limit1(int16 x, int16 y)
-{
-	if (x > y)             return y;
-	else if (x < -y)       return -y;
-	else                return x;
-}
+uint8 while_flag = 0;
 
 
 /*变量声明*/
 uint8 original_image[image_h][image_w];
-uint8 image_thereshold;//图像分割阈值
-//------------------------------------------------------------------------------------------------------------------
-//  @brief      获得一副灰度图像
-//  @since      v1.0 
-//------------------------------------------------------------------------------------------------------------------
+uint8 image_thereshold = 80;//图像分割阈值
+////------------------------------------------------------------------------------------------------------------------
+////  @brief      获得一副灰度图像
+////  @since      v1.0 
+////------------------------------------------------------------------------------------------------------------------
 void Get_image(uint8(*mt9v03x_image)[image_w])
 {
 	#define use_num		1	//1就是不压缩，2就是压缩一倍	
@@ -137,6 +109,56 @@ uint8 otsuThreshold(uint8 *image, uint16 col, uint16 row)
     }
    return Threshold;
 }
+
+////-------------------------------------------------------------------------------------
+////使用大津法进行二值化处理
+////-------------------------------------------------------------------------------------
+//uint8 otsuThreshold(uint8 *image, uint16 width, uint16 height)
+//{
+//    #define GrayScale 256
+//    int pixel_count[GrayScale] = {0};//每个灰度值所占像素个数
+//    float pixel_account[GrayScale] = {0};//每个灰度值所占总像素比例
+//    int i,j;   
+//    int pixel_sum = width * height;   //总像素点
+//    uint8 threshold = 0;
+//    uint8* pixel_data = image;  //指向像素数据的指针
+
+
+//    //统计灰度级中每个像素在整幅图像中的个数  
+//    for (i = 0; i < height; i++)
+//    {
+//        for (j = 0; j < width; j++)
+//        {
+//            pixel_count[(int)pixel_data[i * width + j]]++;  //将像素值作为计数数组的下标
+
+//        }
+//    }
+//    float u = 0;  
+//    for (i = 0; i < GrayScale; i++)
+//    {
+//        pixel_account[i] = (float)pixel_count[i] / pixel_sum;   //计算每个像素在整幅图像中的比例  
+//        u += i * pixel_account[i];  //总平均灰度
+//    }
+
+//      
+//    float variance_max=0.0;  //最大类间方差
+//    float w0 = 0, avgValue  = 0;  //w0 前景比例 ，avgValue 前景平均灰度
+//    for(int i = 0; i < 256; i++)     //每一次循环都是一次完整类间方差计算 (两个for叠加为1个)
+//    {  
+//        w0 += pixel_account[i];  //假设当前灰度i为阈值, 0~i 灰度像素所占整幅图像的比例即前景比例
+//        avgValue  += i * pixel_account[i];        
+//        
+//        float variance = pow((avgValue/w0 - u), 2) * w0 /(1 - w0);    //类间方差   
+//        if(variance > variance_max) 
+//        {  
+//            variance_max = variance;  
+//            threshold = i;  
+//        }  
+//    } 
+
+//    return threshold;
+
+//}
 //------------------------------------------------------------------------------------------------------------------
 //  @brief      图像二值化，这里用的是大津法二值化
 //  @since      v1.0 
@@ -145,7 +167,13 @@ uint8 bin_image[image_h][image_w];//图像数组
 void turn_to_bin(void)
 {
   uint8 i,j;
- image_thereshold = otsuThreshold(original_image[0], image_w, image_h);
+	while_flag++;
+	if (while_flag == 5)
+	{
+		image_thereshold = otsuThreshold(original_image[0], image_w, image_h);
+		while_flag = 0;
+	}
+  
   for(i = 0;i<image_h;i++)
   {
       for(j = 0;j<image_w;j++)
@@ -155,6 +183,8 @@ void turn_to_bin(void)
       }
   }
 }
+
+
 
 
 //------------------------------------------------------------------------------------------------------------------
@@ -181,7 +211,6 @@ uint8 get_start_point(uint8 start_row)
 		start_point_l[1] = start_row;//y
 		if (bin_image[start_row][i] == 255 && bin_image[start_row][i - 1] == 0)
 		{
-			//printf("找到左边起点image[%d][%d]\n", start_row,i);
 			l_found = 1;
 			break;
 		}
@@ -347,8 +376,8 @@ void search_l_r(uint16 break_flag, uint8(*image)[image_w], uint16 *l_stastic, ui
 			//printf("三次进入同一个点，退出\n");
 			break;
 		}
-		if (my_abs(points_r[r_data_statics][0] - points_l[l_data_statics - 1][0]) < 2
-			&& my_abs(points_r[r_data_statics][1] - points_l[l_data_statics - 1][1] < 2)
+		if (abs(points_r[r_data_statics][0] - points_l[l_data_statics - 1][0]) < 2
+			&& abs(points_r[r_data_statics][1] - points_l[l_data_statics - 1][1] < 2)
 			)
 		{
 			//printf("\n左右相遇退出\n");	
@@ -548,6 +577,9 @@ void image_draw_rectan(uint8(*image)[image_w])
 	}
 }
 
+uint8 break_point_l[8];
+uint8 break_point_r[8];
+uint8 center_value = 94;
 //------------------------------------------------------------------------------------------------------------------
 //函数名称：void image_process(void)
 //功能说明：最终处理函数
@@ -557,7 +589,9 @@ void image_draw_rectan(uint8(*image)[image_w])
 void image_process(void)
 {
 	uint16 i;
-	uint8 hightest = 0;//定义一个最高行，tip：这里的最高指的是y值的最小
+	center_value = 0;
+	uint16 sum;
+	uint8 hightest = 0;//定义一个最高行
 	/*这是离线调试用的*/
 	Get_image(mt9v03x_image);
 	turn_to_bin();
@@ -567,20 +601,22 @@ void image_process(void)
 	//清零
 	data_stastics_l = 0;
 	data_stastics_r = 0;
+	sum = 0;
 	if (get_start_point(image_h - 2))//找到起点了，再执行八领域，没找到就一直找
 	{
 		printf("Eight Areas Start\n");
 		search_l_r((uint16)USE_num, bin_image, &data_stastics_l, &data_stastics_r, start_point_l[0], start_point_l[1], start_point_r[0], start_point_r[1], &hightest);
 		printf("Eight Areas End\n");
 		// 从爬取的边界线内提取边线 ， 这个才是最终有用的边线
+		
 		get_left(data_stastics_l);
 		get_right(data_stastics_r);
-		//处理函数放这里，不要放到if外面去了，不要放到if外面去了，不要放到if外面去了，重要的事说三遍
-
+		crossing_add(crossing_handle_l(), crossing_handle_r());
+		
 	}
 
 
-	//显示图像   改成你自己的就行 等后期足够自信了，显示关掉，显示屏挺占资源的
+	//显示图像
 	ips200_show_gray_image(0, 50, bin_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 
 		//根据最终循环次数画出边界点
@@ -598,34 +634,224 @@ void image_process(void)
 			center_line[i] = (l_border[i] + r_border[i]) >> 1;//求中线
 			//求中线最好最后求，不管是补线还是做状态机，全程最好使用一组边线，中线最后求出，不能干扰最后的输出
 			//当然也有多组边线的找法，但是个人感觉很繁琐，不建议
-			ips200_draw_point(center_line[i], i + 50, uesr_GREEN);//显示起点 显示中线	
+			ips200_draw_point(center_line[i], i + 50, uesr_RED);//显示起点 显示中线	
 			ips200_draw_point(l_border[i], i + 50, uesr_GREEN);//显示起点 显示左边线
-			ips200_draw_point(r_border[i], i + 50, uesr_GREEN);//显示起点 显示右边线
+			ips200_draw_point(r_border[i], i + 50, uesr_BLUE);//显示起点 显示右边线
 		}
-
+		for (i = image_h - 9; i < image_h - 1; i++)
+		{
+			if (center_line[i])
+				sum += center_line[i];
+		}
+		center_value = sum / 8;
 
 }
 
+//------------------------------------------------------------------------------------------------------------------
+//函数名称：uint8 crossing_handle(void)
+//功能说明：十字处理函数
+//参数说明：无
+//函数返回：
+//------------------------------------------------------------------------------------------------------------------
 
+uint8 crossing_handle_l(void)
+{
+	uint8 i = 0;
+	uint8 break_num_l = 0;
+	for (i = 0; i < image_h-2; i++)
+	{
+		if (l_border[i] != 0)
+		{
+			if (l_border[i] - l_border[i+1] >= 5)
+			{
+				break_point_l[break_num_l] = i;
+				break_num_l++;
+			}
+			else if (l_border[i] - l_border[i+1] <= -5)
+			{
+				break_point_l[break_num_l] = i + 1;
+				break_num_l++;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (break_num_l)
+	{
+		return break_num_l;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
+uint8 crossing_handle_r(void)
+{
+	uint8 i = 0;
+	uint8 break_num_r = 0;
+	for (i = 0; i < image_h-2; i++)
+	{
+		if (r_border[i] != 0)
+		{
+			if (r_border[i] - r_border[i+1] >= 5)
+			{
+				break_point_r[break_num_r] = i + 1;
+				break_num_r++;
+			}
+			else if (r_border[i] - r_border[i+1] <= -5)
+			{
+				break_point_r[break_num_r] = i;
+				break_num_r++;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (break_num_r)
+	{
+		return break_num_r;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
+//------------------------------------------------------------------------------------------------------------------
+//函数名称：uint8 crossing_handle(void)
+//功能说明：最小二乘法函数
+//参数说明：无
+//函数返回：
+//------------------------------------------------------------------------------------------------------------------
 
-/*
+void least_squares(uint8 begin, uint8 end, uint8 *border, float *xielv, float *jieju)
+{
+	float sum_x = 0, sum_y = 0, sum_xy = 0, sum_x2 = 0;
+	int16 i = 0;
+	*xielv = 0;
+	*jieju = 0;
 
-这里是起点（0.0）***************——>*************x值最大
-************************************************************
-************************************************************
-************************************************************
-************************************************************
-******************假如这是一副图像*************************
-***********************************************************
-***********************************************************
-***********************************************************
-***********************************************************
-***********************************************************
-***********************************************************
-y值最大*******************************************(188.120)
+	for (i = begin; i < end; i++)
+	{
+		sum_x += i;
+		sum_y += border[i];
+		sum_xy += i * (border[i]);
+		sum_x2 += i * i;
 
-*/
+	}
+	if ((end - begin)*sum_x2 - sum_x * sum_x) //判断除数是否为零
+	{
+		*xielv = ((end - begin)*sum_xy - sum_x * sum_y) / ((end - begin)*sum_x2 - sum_x * sum_x);
 
+	}
+	*jieju = (sum_y - (*xielv) * sum_x) / (end - begin);
+}
+void xieji(uint8 begin, uint8 end, float *xielv, float *jieju,uint8 flag)
+{
+	*xielv = 0;
+	*jieju = 0;
+	if (flag == 0)
+	{
+		*xielv = (l_border[end] - l_border[begin]) / end - begin;
+		*jieju = l_border[begin] - (*xielv) * begin;
+	}
+	else if (flag == 1)
+	{
+		*xielv = (r_border[end] - r_border[begin]) / end - begin;
+		*jieju = r_border[begin] - (*xielv) * begin;
+	}
+}
 
+void crossing_add(uint8 num_l, uint8 num_r)
+{
+	float xielv_l,jieju_l;
+	float xielv_r,jieju_r;
+	uint16 i =0;
+	if (num_l != 0 && num_r ==0)
+	{
+		
+	}
+	if (num_l == 1)
+	{
+		least_squares(break_point_l[0]-15, break_point_l[0] - 5, l_border, &xielv_l, &jieju_l);
+		for (i = break_point_l[0] - 5; i < image_h - 1; i++)
+		{
+			l_border[i] = xielv_l*i + jieju_l;
+			if (l_border[i] <= 1)
+			{
+				l_border[i] = 1;
+			}
+		}
+	}
+	else if (num_l == 2)
+	{
+		xieji(break_point_l[1] , break_point_l[0], &xielv_l, &jieju_l, 0);
+		for (i = break_point_l[1]; i < break_point_l[0]; i++)
+		{
+			l_border[i] = xielv_l*i + jieju_l;
+			if (l_border[i] <= 1)
+			{
+				l_border[i] = 1;
+			}
+		}
+	}
+	if (num_r == 1)
+	{
+		least_squares(break_point_r[0]-15, break_point_r[0] - 5, r_border, &xielv_r, &jieju_r);
+		for (i = break_point_r[0] - 5; i < image_h - 1; i++)
+		{
+			r_border[i] = xielv_r*i + jieju_r;
+			if (r_border[i] <= 1)
+			{
+				r_border[i] = 1;
+			}
+		}
+	}
+	else if (num_r == 2)
+	{
+		xieji(break_point_r[1] , break_point_r[0], &xielv_r, &jieju_r, 0);
+		for (i = break_point_r[1]; i < break_point_r[0]; i++)
+		{
+			r_border[i] = xielv_r*i + jieju_r;
+			if (r_border[i] <= 1)
+			{
+				r_border[i] = 1;
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------------------------------------------------
+//函数名称：int my_abs(int value)
+//功能说明：求绝对值
+//------------------------------------------------------------------------------------------------------------------
+
+//int my_abs(int value)
+//{
+//if(value>=0) return value;
+//else return -value;
+//}
+
+int16 limit_a_b(int16 x, int a, int b)
+{
+    if(x<a) x = a;
+    if(x>b) x = b;
+    return x;
+}
+
+//------------------------------------------------------------------------------------------------------------------
+//函数名称：int16 limit(int16 x, int16 y)
+//功能说明：求x,y中的最小值
+//函数返回：返回两值中的最小值
+//------------------------------------------------------------------------------------------------------------------
+int16 limit1(int16 x, int16 y)
+{
+	if (x > y)             return y;
+	else if (x < -y)       return -y;
+	else                return x;
+}

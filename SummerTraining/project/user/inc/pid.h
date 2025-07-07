@@ -24,6 +24,8 @@ typedef struct
 	
     int fMax_Out;     /* PID最大输出 */
 	
+	float alpha;
+	
 }tagPID_T;
 
 typedef struct
@@ -34,12 +36,15 @@ typedef struct
 
     float fMax_Iout;    /* PID最大积分输出 */
     float fMax_Out;     /* PID最大输出 */
+	
+	float alpha;
 
 }PIDInitStruct;
 
 void PID_Init(tagPID_T *_tPid,PIDInitStruct *_tPidInit);
 void PID_Update(tagPID_T *_tPid,PIDInitStruct *_tPidInit);
-int PID_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue,float dt);
+int PID_Add_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue);
+int PID_Location_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue);
 void PID_Clear(tagPID_T *_tPid);
 
 #endif

@@ -108,7 +108,9 @@ void TIM6_IRQHandler (void)
 {
 	
 	extern void pit_key_handler (void);
+	extern void pit_encoder_handler (void);
     // 此处编写用户代码
+	  pit_encoder_handler();
 	  pit_key_handler();
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
@@ -120,9 +122,9 @@ void TIM6_IRQHandler (void)
 //-------------------------------------------------------------------------------------------------------------------
 void TIM7_IRQHandler (void)
 {
-	extern void pit_encoder_handler (void);
+	
     // 此处编写用户代码
-	pit_encoder_handler();
+	
     // 此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
 }

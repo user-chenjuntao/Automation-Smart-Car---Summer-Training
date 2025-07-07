@@ -1,0 +1,24 @@
+//#ifndef _image_my_h_
+//#define _image_my_h_
+
+
+//#include "zf_common_typedef.h"
+//#include "zf_common_font.h"
+//#include "zf_device_mt9v03x.h"
+//#include "zf_device_ips200.h"
+//#include "math.h"
+
+
+//#define WHITE_PIXEL                255
+//#define BLACK_PIXEL                0
+////定义膨胀和腐蚀的阈值区间
+//#define THRESHOLD_MAX              255*5
+//#define THRESHOLD_MIN              255*2
+////#define BORDERLEFT                 1
+////#define BORDERRIGHT                254
+
+//uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
+
+
+//#endif
+

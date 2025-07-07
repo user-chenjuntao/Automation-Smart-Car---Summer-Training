@@ -4,6 +4,8 @@
 #include "zf_common_typedef.h"
 #include "zf_driver_gpio.h"
 #include "zf_driver_pwm.h"
+#include "pid.h"
+#include "config.h"
 
 
 #define MAX_DUTY            (70 )                                               // 最大 MAX_DUTY% 占空比
@@ -18,11 +20,11 @@
 
 #define SERVO_MOTOR_L_MAX           (75 )                                       // 定义主板上舵机活动范围 角度
 #define SERVO_MOTOR_R_MAX           (105)                                       // 定义主板上舵机活动范围 角度
-#define SERVO_MOTOR_DUTY(x)         ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
+#define SERVO_MOTOR_INIT            (600)
 
 void motor_init(void);
 void servo_init(void);
 void motor_pwm(int8 duty);
-void servo_pwm(float servo_motor_duty);
-
+//void servo_pwm(uint32 num);
+//void move_control();
 #endif

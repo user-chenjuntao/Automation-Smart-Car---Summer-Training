@@ -2,9 +2,8 @@
 
 uint32 straight_speed = 6000,turn_speed = 3000;
 uint32 speed_limit = 9000,left_limit = 500,right_limit = 2500;
-//extern uint8 image_threshold;
+extern uint16 servo_pwm_value;
 uint32 angle = 90;
-extern float angle_servo;
 float level[5] = {100,10,1,0.1,0.01};
 static uint8 level_i = 0;
 extern int16 encoder_data_1;
@@ -79,8 +78,8 @@ menu_item Pa_Servo_Menu = {
 //-----------------------------------------
 menu_item Pa_Pid_Menu = {
 	.name = "PaPid",
-	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out"},
-	.number = 5,
+	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out","Alpha"},
+	.number = 6,
 };
 //-----------------------------------------
 //三级菜单——速度状态
@@ -103,8 +102,8 @@ menu_item St_Servo_Menu = {
 //-----------------------------------------
 menu_item St_Pid_Menu = {
 	.name = "StPid",
-	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out"},
-	.number = 5,
+	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out","Alpha"},
+	.number = 6,
 };
 
 static uint16 cursor = 1;
@@ -276,7 +275,7 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case PRAMETERSERVO:
-			ips200_show_float(200, 16, angle_servo, 3, 1);
+			ips200_show_uint(184, 16, servo_pwm_value, 3);
 			ips200_show_uint(200, 32, left_limit, 4);
 			ips200_show_uint(200, 48, right_limit, 4);
 			ips200_show_string(0, 208, "level");
@@ -289,6 +288,7 @@ void menu_display(void)
 			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
 			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
 			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_float(184, 96, SpeedPidInitStruct.alpha, 1, 1);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -302,7 +302,7 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSSERVO:
-			ips200_show_float(200, 16, angle_servo, 3, 1);
+			ips200_show_uint(184, 16, servo_pwm_value, 3);
 			ips200_show_uint(200, 32, left_limit, 4);
 			ips200_show_uint(200, 48, right_limit, 4);
 			ips200_show_string(0, 208, "level");
@@ -315,6 +315,7 @@ void menu_display(void)
 			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
 			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
 			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
+			ips200_show_float(184, 96, SpeedPidInitStruct.alpha, 1, 1);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -329,7 +330,7 @@ void menu_display(void)
 			ips200_show_string(0, 240, "angle");
 			ips200_show_string(0, 256, "encoder_1");
 			ips200_show_string(0, 272, "encoder_2");
-		    ips200_show_uint(200, 240, angle, 4);
+		    ips200_show_uint(200, 240, servo_pwm_value, 4);
 			ips200_show_int(200, 256, encoder_data_1, 4);
 			ips200_show_int(200, 272, encoder_data_2, 4);
 //			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -396,7 +397,7 @@ void menu_switch(void)
 					speed_limit += (uint32)level[level_i];
 					break;
 				case 221:
-					angle_servo += (uint32)level[level_i];
+					servo_pwm_value += (uint32)level[level_i];
 					break;
 				case 222:
 					left_limit += (uint32)level[level_i];
@@ -405,19 +406,22 @@ void menu_switch(void)
 					right_limit += (uint32)level[level_i];
 					break;
 				case 231:
-					SpeedPidInitStruct.fKp +=level[level_i];
+					SpeedPidInitStruct.fKp += level[level_i];
 					break;
 				case 232:
-					SpeedPidInitStruct.fKi +=level[level_i];
+					SpeedPidInitStruct.fKi += level[level_i];
 					break;
 				case 233:
-					SpeedPidInitStruct.fKd +=level[level_i];
+					SpeedPidInitStruct.fKd += level[level_i];
 					break;
 				case 234:
-					SpeedPidInitStruct.fMax_Iout +=level[level_i];
+					SpeedPidInitStruct.fMax_Iout += level[level_i];
 					break;
 				case 235:
-					SpeedPidInitStruct.fMax_Out +=level[level_i];
+					SpeedPidInitStruct.fMax_Out += level[level_i];
+					break;
+				case 236:
+					SpeedPidInitStruct.alpha += level[level_i];
 					break;
 				default:
 					break;
@@ -438,7 +442,7 @@ void menu_switch(void)
 					speed_limit -= (uint32)level[level_i];
 					break;
 				case 221:
-					angle_servo -= (uint32)level[level_i];
+					servo_pwm_value -= (uint32)level[level_i];
 					break;
 				case 222:
 					left_limit -= (uint32)level[level_i];
@@ -460,6 +464,9 @@ void menu_switch(void)
 					break;
 				case 235:
 					SpeedPidInitStruct.fMax_Out -=level[level_i];
+					break;
+				case 236:
+					SpeedPidInitStruct.alpha -= level[level_i];
 					break;
 				default:
 					break;

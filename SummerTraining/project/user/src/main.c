@@ -40,7 +40,7 @@
 
 #define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY                (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
-#define PIT_ENCODER                 (TIM7_PIT) 
+//#define PIT_ENCODER                 (TIM7_PIT) 
 #define ENCODER_1                   (TIM3_ENCODER)
 #define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
 #define ENCODER_1_B                 (TIM3_ENCODER_CH2_B5)
@@ -53,10 +53,11 @@
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
 int8 duty_pwm;
-float angle_servo = 90.0;
+
 //uint8 image_threshold = 0;
 extern uint8 reference_point;
-
+extern uint8 center_value;
+uint16 servo_pwm_value;
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
@@ -67,6 +68,7 @@ extern uint8 reference_point;
 // **************************** 代码区域 ****************************
 int main(void)
 {
+	int16 servo_num = 0;
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
 
@@ -76,10 +78,11 @@ int main(void)
 	motor_init();
 	key_init(50);
     pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 50ms 周期
-	pit_ms_init(PIT_ENCODER, 100);
+//	pit_ms_init(PIT_ENCODER, 100);
     interrupt_set_priority(PIT_PRIORITY, 3);                                    // 设置 PIT 对周期中断的中断优先级为 3
     menu_init();
 	servo_init();
+	PID_Init(&Speedpid, &SpeedPidInitStruct);
 	while(1)
     {
         if(mt9v03x_init())
@@ -105,7 +108,18 @@ int main(void)
         menu_switch();
 		menu_display();
 		motor_pwm(duty_pwm);
-		servo_pwm(angle_servo);
+		
+		servo_num = PID_Location_Calculate(&Speedpid, center_value, 94);
+		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
+		if (servo_pwm_value >= 700)
+		{
+			servo_pwm_value = 700;
+		}
+		else if (servo_pwm_value <= 500)
+		{
+			servo_pwm_value = 500;
+		}
+		pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
         // 此处编写需要循环执行的代码
     }
 }

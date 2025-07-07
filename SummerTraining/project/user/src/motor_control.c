@@ -16,7 +16,6 @@ void motor_init(void)
 void servo_init(void)
 {
 	pwm_init(SERVO_MOTOR_PWM, SERVO_MOTOR_FREQ, 0);
-	
 }
 
 void motor_pwm(int8 duty)
@@ -50,7 +49,12 @@ void motor_pwm(int8 duty)
 
 }
 
-void servo_pwm(float servo_motor_duty)
-{
-	pwm_set_duty(SERVO_MOTOR_PWM, (uint32)SERVO_MOTOR_DUTY(servo_motor_duty));
-}
+//void servo_pwm(uint32 num)
+//{
+//	pwm_set_duty(SERVO_MOTOR_PWM, num);
+//}
+
+//void move_control(void)
+//{
+//	
+//}
