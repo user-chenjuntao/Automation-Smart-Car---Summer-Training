@@ -155,6 +155,12 @@ void getin(void)
 				break;
 			case PRAMETERPID:
 				currentMenu = &Pa_Pid_Menu;
+//				SpeedPidInitStruct.fKp = flash_union_buffer[0].float_type;
+//				SpeedPidInitStruct.fKi = flash_union_buffer[1].float_type;
+//				SpeedPidInitStruct.fKd = flash_union_buffer[2].float_type;
+//				SpeedPidInitStruct.fMax_Iout = flash_union_buffer[3].float_type;
+//				SpeedPidInitStruct.fMax_Out = flash_union_buffer[4].float_type;
+//				SpeedPidInitStruct.alpha = flash_union_buffer[5].float_type;
 				break;
 			case STATUSSPEED:
 				currentMenu = &St_Speed_Menu;
@@ -380,6 +386,12 @@ void menu_switch(void)
 		else if (key_get_state(KEY_1) == 2)
 		{
 			getout();
+//			flash_union_buffer[0].float_type = SpeedPidInitStruct.fKp;
+//			flash_union_buffer[1].float_type = SpeedPidInitStruct.fKi;
+//			flash_union_buffer[2].float_type = SpeedPidInitStruct.fKd;
+//			flash_union_buffer[3].float_type = SpeedPidInitStruct.fMax_Iout;
+//			flash_union_buffer[4].float_type = SpeedPidInitStruct.fMax_Out;
+//			flash_union_buffer[5].float_type = SpeedPidInitStruct.alpha;
 			key_clear_state(KEY_1);
 			ips200_clear();
 		}

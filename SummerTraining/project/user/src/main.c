@@ -35,7 +35,8 @@
 
 #include "zf_common_headfile.h"
 
-
+//#define FLASH_SECTION_INDEX       (127)                                         // 存储数据用的扇区 倒数第一个扇区
+//#define FLASH_PAGE_INDEX          (3)                                           // 存储数据用的页码 倒数第一个页码
 
 
 #define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
@@ -72,6 +73,11 @@ int main(void)
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
 
+	// 此处编写用户代码 例如外设初始化代码等
+//    if(flash_check(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX))                      // 判断是否有数据
+    {
+//        flash_erase_page(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);                // 擦除这一页
+    }
     // 此处编写用户代码 例如外设初始化代码等
 	encoder_quad_init(ENCODER_1, ENCODER_1_A, ENCODER_1_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
     encoder_quad_init(ENCODER_2, ENCODER_2_A, ENCODER_2_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
@@ -80,9 +86,23 @@ int main(void)
     pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 50ms 周期
 //	pit_ms_init(PIT_ENCODER, 100);
     interrupt_set_priority(PIT_PRIORITY, 3);                                    // 设置 PIT 对周期中断的中断优先级为 3
+//	flash_read_page_to_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);           // 将数据从 flash 读取到缓冲区
+//	SpeedPidInitStruct.fKp = flash_union_buffer[0].float_type;
+//	SpeedPidInitStruct.fKi = flash_union_buffer[1].float_type;
+//	SpeedPidInitStruct.fKd = flash_union_buffer[2].float_type;
+//	SpeedPidInitStruct.fMax_Iout = flash_union_buffer[3].float_type;
+//	SpeedPidInitStruct.fMax_Out = flash_union_buffer[4].float_type;
+//	SpeedPidInitStruct.alpha = flash_union_buffer[5].float_type;
+//	flash_union_buffer[0].float_type = SpeedPidInitStruct.fKp;
+//	flash_union_buffer[1].float_type = SpeedPidInitStruct.fKi;
+//	flash_union_buffer[2].float_type = SpeedPidInitStruct.fKd;
+//	flash_union_buffer[3].float_type = SpeedPidInitStruct.fMax_Iout;
+//	flash_union_buffer[4].float_type = SpeedPidInitStruct.fMax_Out;
+//	flash_union_buffer[5].float_type = SpeedPidInitStruct.alpha;
     menu_init();
 	servo_init();
 	PID_Init(&Speedpid, &SpeedPidInitStruct);
+	
 	while(1)
     {
         if(mt9v03x_init())
@@ -111,13 +131,13 @@ int main(void)
 		
 		servo_num = PID_Location_Calculate(&Speedpid, center_value, 94);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
-		if (servo_pwm_value >= 700)
+		if (servo_pwm_value >= 680)
 		{
-			servo_pwm_value = 700;
+			servo_pwm_value = 680;
 		}
-		else if (servo_pwm_value <= 500)
+		else if (servo_pwm_value <= 520)
 		{
-			servo_pwm_value = 500;
+			servo_pwm_value = 520;
 		}
 		pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
         // 此处编写需要循环执行的代码

@@ -7,7 +7,7 @@ PIDInitStruct SpeedPidInitStruct =
 {
 	.fKp       = 8,     //.fKp
 	.fKi       = 0,     //.fKi
-	.fKd       = 0,     //.fKd
+	.fKd       = 1,     //.fKd
 	.fMax_Iout = 10,      //.fMax_Iout
 	.fMax_Out  = 100,       //.fMax_Out
 	.alpha     = 1.0

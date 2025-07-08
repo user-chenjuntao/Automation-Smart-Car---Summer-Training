@@ -6,7 +6,8 @@
 #include "config.h"
 #include "zf_device_mt9v03x.h"
 #include "zf_device_key.h"
-#include "image_test.h"
+#include "image_my.h"
+#include "zf_driver_flash.h"
 
 #include "zf_common_font.h"
 
