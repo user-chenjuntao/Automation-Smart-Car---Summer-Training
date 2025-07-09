@@ -53,7 +53,7 @@
 
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
-int8 duty_pwm;
+int8 duty_pwm = 13;
 
 //uint8 image_threshold = 0;
 extern uint8 reference_point;
@@ -129,7 +129,7 @@ int main(void)
 		menu_display();
 		motor_pwm(duty_pwm);
 		
-		servo_num = PID_Location_Calculate(&Speedpid, center_value, 94);
+		servo_num = PID_Location_Calculate(&Speedpid, center_value, 90);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
 		if (servo_pwm_value >= 680)
 		{

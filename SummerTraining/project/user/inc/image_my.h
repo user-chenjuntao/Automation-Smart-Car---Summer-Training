@@ -17,6 +17,9 @@
 //#define BORDERLEFT                 1
 //#define BORDERRIGHT                254
 
+// 定义邻近拐点的阈值（行数差≤此值则合并，可根据实际调整）
+#define BREAKPOINT_MERGE_THRESHOLD 3
+
 uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
 void image_filter(uint8(*image)[MT9V03X_W]);
@@ -28,6 +31,12 @@ void image_process(void);
 void xieji(uint8 begin, uint8 end, float *xielv, float *jieju,uint8 y_begin,uint8 y_end);
 void least_squares(uint8 begin, uint8 end, uint8 *border, float *xielv, float *jieju);
 void crossing_add(uint8 num_l, uint8 num_r);
+
+
+
+void merge_left_breakpoints(void);
+void merge_right_breakpoints(void);
+void merge_close_breakpoints(void);
 
 #endif
 

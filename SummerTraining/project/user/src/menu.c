@@ -289,12 +289,12 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case PRAMETERPID:
-			ips200_show_float(184, 16, SpeedPidInitStruct.fKp, 3, 2);
-			ips200_show_float(184, 32, SpeedPidInitStruct.fKi, 3, 2);
-			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
-			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
-			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
-			ips200_show_float(184, 96, SpeedPidInitStruct.alpha, 1, 1);
+			ips200_show_float(184, 16, Speedpid.fKp, 3, 2);
+			ips200_show_float(184, 32, Speedpid.fKi, 3, 2);
+			ips200_show_float(184, 48, Speedpid.fKd, 3, 2);
+			ips200_show_float(184, 64, Speedpid.fMax_Iout, 3, 2);
+			ips200_show_float(184, 80, Speedpid.fMax_Out, 3, 2);
+			ips200_show_float(184, 96, Speedpid.alpha, 1, 1);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -316,12 +316,12 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSPID:
-			ips200_show_float(184, 16, SpeedPidInitStruct.fKp, 3, 2);
-			ips200_show_float(184, 32, SpeedPidInitStruct.fKi, 3, 2);
-			ips200_show_float(184, 48, SpeedPidInitStruct.fKd, 3, 2);
-			ips200_show_float(184, 64, SpeedPidInitStruct.fMax_Iout, 3, 2);
-			ips200_show_float(184, 80, SpeedPidInitStruct.fMax_Out, 3, 2);
-			ips200_show_float(184, 96, SpeedPidInitStruct.alpha, 1, 1);
+			ips200_show_float(184, 16, Speedpid.fKp, 3, 2);
+			ips200_show_float(184, 32, Speedpid.fKi, 3, 2);
+			ips200_show_float(184, 48, Speedpid.fKd, 3, 2);
+			ips200_show_float(184, 64, Speedpid.fMax_Iout, 3, 2);
+			ips200_show_float(184, 80, Speedpid.fMax_Out, 3, 2);
+			ips200_show_float(184, 96, Speedpid.alpha, 1, 1);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -418,22 +418,22 @@ void menu_switch(void)
 					right_limit += (uint32)level[level_i];
 					break;
 				case 231:
-					SpeedPidInitStruct.fKp += level[level_i];
+					Speedpid.fKp += level[level_i];
 					break;
 				case 232:
-					SpeedPidInitStruct.fKi += level[level_i];
+					Speedpid.fKi += level[level_i];
 					break;
 				case 233:
-					SpeedPidInitStruct.fKd += level[level_i];
+					Speedpid.fKd += level[level_i];
 					break;
 				case 234:
-					SpeedPidInitStruct.fMax_Iout += level[level_i];
+					Speedpid.fMax_Iout += level[level_i];
 					break;
 				case 235:
-					SpeedPidInitStruct.fMax_Out += level[level_i];
+					Speedpid.fMax_Out += level[level_i];
 					break;
 				case 236:
-					SpeedPidInitStruct.alpha += level[level_i];
+					Speedpid.alpha += level[level_i];
 					break;
 				default:
 					break;
@@ -463,22 +463,22 @@ void menu_switch(void)
 					right_limit -= (uint32)level[level_i];
 					break;
 				case 231:
-					SpeedPidInitStruct.fKp -=level[level_i];
+					Speedpid.fKp -=level[level_i];
 					break;
 				case 232:
-					SpeedPidInitStruct.fKi -=level[level_i];
+					Speedpid.fKi -=level[level_i];
 					break;
 				case 233:
-					SpeedPidInitStruct.fKd -=level[level_i];
+					Speedpid.fKd -=level[level_i];
 					break;
 				case 234:
-					SpeedPidInitStruct.fMax_Iout -=level[level_i];
+					Speedpid.fMax_Iout -=level[level_i];
 					break;
 				case 235:
-					SpeedPidInitStruct.fMax_Out -=level[level_i];
+					Speedpid.fMax_Out -=level[level_i];
 					break;
 				case 236:
-					SpeedPidInitStruct.alpha -= level[level_i];
+					Speedpid.alpha -= level[level_i];
 					break;
 				default:
 					break;

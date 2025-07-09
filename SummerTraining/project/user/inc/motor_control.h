@@ -20,7 +20,7 @@
 
 #define SERVO_MOTOR_L_MAX           (75 )                                       // 定义主板上舵机活动范围 角度
 #define SERVO_MOTOR_R_MAX           (105)                                       // 定义主板上舵机活动范围 角度
-#define SERVO_MOTOR_INIT            (600)
+#define SERVO_MOTOR_INIT            (594)
 
 void motor_init(void);
 void servo_init(void);
