@@ -129,7 +129,7 @@ int main(void)
 		menu_display();
 		motor_pwm(duty_pwm);
 		
-		servo_num = PID_Location_Calculate(&Speedpid, center_value, 90);
+		servo_num = PID_Location_Calculate(&Speedpid, center_value, 93);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
 		if (servo_pwm_value >= 680)
 		{

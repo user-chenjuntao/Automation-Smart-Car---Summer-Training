@@ -9,6 +9,8 @@ static uint8 level_i = 0;
 extern int16 encoder_data_1;
 extern int16 encoder_data_2;
 extern int8 duty_pwm;
+extern uint8 break_num_left;
+extern uint8 break_num_right;
 //uint32 pid[5]={}
 
 //-----------------------------------------
@@ -333,6 +335,7 @@ void menu_display(void)
 				image_process();
 				mt9v03x_finish_flag=0;
 			}
+			
 			ips200_show_string(0, 240, "angle");
 			ips200_show_string(0, 256, "encoder_1");
 			ips200_show_string(0, 272, "encoder_2");
