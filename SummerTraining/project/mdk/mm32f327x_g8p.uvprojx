@@ -435,6 +435,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\image_my.c</FilePath>
             </File>
+            <File>
+              <FileName>element_handle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\element_handle.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -484,6 +489,11 @@
               <FileName>image_my.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\image_my.h</FilePath>
+            </File>
+            <File>
+              <FileName>element_handle.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\element_handle.h</FilePath>
             </File>
           </Files>
         </Group>

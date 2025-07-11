@@ -53,11 +53,10 @@
 
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
-int8 duty_pwm = 13;
+int8 duty_pwm = 14;
 
 //uint8 image_threshold = 0;
 extern uint8 reference_point;
-extern uint8 center_value;
 uint16 servo_pwm_value;
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
@@ -127,17 +126,18 @@ int main(void)
 //		image_threshold = otsuThreshold_less(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
         menu_switch();
 		menu_display();
+
 		motor_pwm(duty_pwm);
 		
-		servo_num = PID_Location_Calculate(&Speedpid, center_value, 93);
+		servo_num = PID_Location_Calculate(&Speedpid, final_mid_line, 93);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
-		if (servo_pwm_value >= 680)
+		if (servo_pwm_value >= 690)
 		{
-			servo_pwm_value = 680;
+			servo_pwm_value = 690;
 		}
-		else if (servo_pwm_value <= 520)
+		else if (servo_pwm_value <= 510)
 		{
-			servo_pwm_value = 520;
+			servo_pwm_value = 510;
 		}
 		pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
         // 此处编写需要循环执行的代码
@@ -147,11 +147,11 @@ int main(void)
 
 void pit_encoder_handler (void)
 {
-    encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
-    encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
+//    encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
+//    encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
 
-    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
-    encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
+//    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
+//    encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
 }
 
 void pit_key_handler (void)

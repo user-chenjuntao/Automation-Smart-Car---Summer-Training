@@ -5,9 +5,9 @@ tagPID_T Anglepid;
 
 PIDInitStruct SpeedPidInitStruct = 
 {
-	.fKp       = 2.4,     //.fKp
+	.fKp       = 1.1,     //.fKp
 	.fKi       = 0,     //.fKi
-	.fKd       = 1.2,     //.fKd
+	.fKd       = 0.8,     //.fKd
 	.fMax_Iout = 1,      //.fMax_Iout
 	.fMax_Out  = 150,       //.fMax_Out
 	.alpha     = 1.0

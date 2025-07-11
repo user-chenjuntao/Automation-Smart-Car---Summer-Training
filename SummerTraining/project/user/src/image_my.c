@@ -5,6 +5,28 @@ uint8 PostProcessing_image[MT9V03X_H][MT9V03X_W];                               
 uint8 Left_Lost_Time = 0;                                                              //记录左边界无效点
 uint8 Right_Lost_Time = 0;                                                             //记录右边界无效点
 
+/*********************************************************
+** //图像权重数组  //权重越靠上，车转弯越早
+*********************************************************/
+uint8 mid_weight_list[120] = 
+{
+    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,
+    6,6,6,6,6,6,6,6,6,6,
+    7,8,9,10,11,12,13,14,15,16,
+    17,18,19,20,20,20,20,19,18,17,
+    16,15,14,13,12,11,10,9,8,7,
+    6,6,6,6,6,6,6,6,6,6,
+    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,
+};
+
+uint8 final_mid_line = MID_W;   // 最终输出的中线值
+uint8 last_mid_line = MID_W;    // 上次中线值
+
 //-------------------------------------------------------------------------------------
 //使用大津法进行二值化处理
 //-------------------------------------------------------------------------------------
@@ -149,7 +171,14 @@ void research_longest_line(void)
     line = 119;  // 默认值（119是一个任意选择，代表较长的长度）
     
     // 确保左右边界合理
-    if (left_point >= right_point) return;
+    if (left_point >= right_point)
+	{
+		// 设置安全默认值或添加错误处理
+		longest_line_number = MT9V03X_W / 2;
+		line = 60;
+		return;
+	}
+		
     
     for (i = left_point; i < right_point; i++)
     {
@@ -171,8 +200,8 @@ void research_longest_line(void)
         // 如果没有找到黑白边界，但整列都是白色
         if (j == 0 && PostProcessing_image[0][i] == WHITE_PIXEL)
         {
-            start_row = 0;
-            current_length = MT9V03X_H;  // 整列都是白色
+            start_row = 2;
+            current_length = MT9V03X_H - 2;  // 整列都是白色
         }
         
         // 更新最长白色列信息
@@ -564,23 +593,26 @@ void image_process(void)
 //		ips200_draw_point(break_point_r[i][1],break_point_r[i][0]+50,RGB565_RED);
 //	}
 	ips200_show_uint(0,208,l_d_num,3);
-	ips200_show_uint(50,208,l_u_num,3);
-	ips200_show_uint(100,208,r_d_num,3);
-	ips200_show_uint(150,208,r_u_num,3);
+	ips200_show_uint(30,208,l_u_num,3);
+	ips200_show_uint(60,208,r_d_num,3);
+	ips200_show_uint(90,208,r_u_num,3);
 	sum = 0;
 	
-	for (uint8 i = MT9V03X_H - 25; i < MT9V03X_H - 1; i++)
-	{
-		if (center_line[i])
-			sum += center_line[i];
-	}
-	center_value = sum / 24;
+//	for (uint8 i = MT9V03X_H-31; i < MT9V03X_H - 1; i++)
+//	{
+//		if (center_line[i])
+//			sum += center_line[i];
+//	}
+//	center_value = sum / 30;
+
+	final_mid_line = find_mid_line_weight();
+	ips200_show_uint(120,208,final_mid_line,3);
 	break_num_left = 0;
 	break_num_right = 0;
 	Left_Lost_Time = 0;
 	Right_Lost_Time = 0;
-	memset(break_point_l, 0, sizeof(break_point_l));
-	memset(break_point_r, 0, sizeof(break_point_r));
+//	memset(break_point_l, 0, sizeof(break_point_l));
+//	memset(break_point_r, 0, sizeof(break_point_r));
 	
 	memset(road_left, 0, sizeof(road_left));
 	memset(road_right, 0, sizeof(road_right));
@@ -759,7 +791,32 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 	}
 }
 
-//void roundabout_research(uint8 num_l, uint8 num_r)
-//{
-//	uint8 
-//}
+uint8 my_max(uint8 num1, uint8 num2)
+{
+	if (num1 > num2)
+		return num1;
+	else
+		return num2;
+}
+
+/*********************************************************
+** 备注：权重可通过图像权重数组调节
+*********************************************************/
+uint8 find_mid_line_weight(void)
+{
+    uint8 mid_line_value = MID_W;       // 最终中线输出值
+    uint8 mid_line = MID_W;             // 本次中线值
+    uint32 weight_midline_sum = 0;      // 加权中线累加值
+    uint32 weight_sum = 0;              // 权重累加值
+
+    for(uint8 i = MT9V03X_H - 1; i > line; i--)
+    {
+        weight_midline_sum += center_line[i] * mid_weight_list[i];
+        weight_sum += mid_weight_list[i];
+    }
+
+    mid_line = (uint8)(weight_midline_sum / weight_sum);
+    mid_line_value = last_mid_line * 0.2 + mid_line * 0.8; // 互补滤波
+    last_mid_line = mid_line_value;
+    return mid_line_value;
+}
