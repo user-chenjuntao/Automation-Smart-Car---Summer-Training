@@ -440,6 +440,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\element_handle.c</FilePath>
             </File>
+            <File>
+              <FileName>servo_pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\servo_pid.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -494,6 +499,11 @@
               <FileName>element_handle.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\element_handle.h</FilePath>
+            </File>
+            <File>
+              <FileName>servo_pid.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\servo_pid.h</FilePath>
             </File>
           </Files>
         </Group>

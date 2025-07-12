@@ -330,11 +330,7 @@ void menu_display(void)
 			break;
 		case IMAGE:
 //			ips200_show_uint(200, 16, image_threshold, 4);
-			if(mt9v03x_finish_flag)
-			{
-				image_process();
-				mt9v03x_finish_flag=0;
-			}
+			image_show();
 			
 			ips200_show_string(0, 240, "angle");
 			ips200_show_string(0, 256, "encoder_1");

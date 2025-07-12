@@ -124,10 +124,16 @@ int main(void)
     {
         // 此处编写需要循环执行的代码
 //		image_threshold = otsuThreshold_less(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
+		if(mt9v03x_finish_flag)
+		{
+			image_process();
+			mt9v03x_finish_flag=0;
+		}
         menu_switch();
 		menu_display();
+		image_data_clear();
 
-		motor_pwm(duty_pwm);
+		
 		
 		servo_num = PID_Location_Calculate(&Speedpid, final_mid_line, 93);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
@@ -139,7 +145,17 @@ int main(void)
 		{
 			servo_pwm_value = 510;
 		}
-		pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
+		if (car_stop_flag == 1)
+		{
+			pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_INIT);
+			motor_pwm(0);
+		}
+		else
+		{
+			pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
+			motor_pwm(duty_pwm);
+		}
+		
         // 此处编写需要循环执行的代码
     }
 }
@@ -147,11 +163,11 @@ int main(void)
 
 void pit_encoder_handler (void)
 {
-//    encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
-//    encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
+    encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
+    encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
 
-//    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
-//    encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
+    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
+    encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
 }
 
 void pit_key_handler (void)

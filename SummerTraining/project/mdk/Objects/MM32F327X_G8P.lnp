@@ -10,6 +10,7 @@
 ".\objects\image_test.o"
 ".\objects\image_my.o"
 ".\objects\element_handle.o"
+".\objects\servo_pid.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"
