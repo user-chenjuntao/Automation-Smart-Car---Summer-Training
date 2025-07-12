@@ -8,7 +8,7 @@ float level[5] = {100,10,1,0.1,0.01};
 static uint8 level_i = 0;
 extern int16 encoder_data_1;
 extern int16 encoder_data_2;
-extern int8 duty_pwm;
+extern uint8 duty_pwm;
 extern uint8 break_num_left;
 extern uint8 break_num_right;
 //uint32 pid[5]={}

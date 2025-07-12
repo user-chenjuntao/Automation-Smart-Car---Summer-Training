@@ -135,6 +135,7 @@
 #include "config.h"
 #include "motor_control.h"
 #include "image_test.h"
+#include "servo_pid.h"
 //===================================================用户自定义文件===================================================
 
 #endif

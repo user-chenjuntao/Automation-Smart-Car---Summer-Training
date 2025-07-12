@@ -7,6 +7,7 @@
 #include "zf_device_mt9v03x.h"
 #include "zf_device_ips200.h"
 #include "math.h"
+#include "servo_pid.h"
 
 
 #define WHITE_PIXEL                255
@@ -16,9 +17,11 @@
 #define THRESHOLD_MIN              255*2
 //#define BORDERLEFT                 1
 //#define BORDERRIGHT                254
-#define MID_W                      93
+#define MID_W                      86
 // 定义邻近拐点的阈值（行数差≤此值则合并，可根据实际调整）
 #define BREAKPOINT_MERGE_THRESHOLD 6
+#define LEFT_MAX                   4
+#define RIGHT_MAX                  116
 
 extern uint8 car_stop_flag;
 extern uint8 final_mid_line;

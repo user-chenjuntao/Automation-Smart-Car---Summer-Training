@@ -53,10 +53,10 @@
 
 int16 encoder_data_1 = 0;
 int16 encoder_data_2 = 0;
-int8 duty_pwm = 14;
+
 
 //uint8 image_threshold = 0;
-extern uint8 reference_point;
+//extern uint8 reference_point;
 uint16 servo_pwm_value;
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
@@ -129,21 +129,22 @@ int main(void)
 			image_process();
 			mt9v03x_finish_flag=0;
 		}
+		servo_pid_test();
         menu_switch();
 		menu_display();
 		image_data_clear();
 
 		
 		
-		servo_num = PID_Location_Calculate(&Speedpid, final_mid_line, 93);
+		servo_num = PID_Location_Calculate(&Speedpid, final_mid_line, 86);
 		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
-		if (servo_pwm_value >= 690)
+		if (servo_pwm_value >= 685)
 		{
-			servo_pwm_value = 690;
+			servo_pwm_value = 685;
 		}
-		else if (servo_pwm_value <= 510)
+		else if (servo_pwm_value <= 515)
 		{
-			servo_pwm_value = 510;
+			servo_pwm_value = 515;
 		}
 		if (car_stop_flag == 1)
 		{

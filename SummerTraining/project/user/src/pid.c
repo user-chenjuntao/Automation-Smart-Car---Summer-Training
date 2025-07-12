@@ -10,7 +10,7 @@ void PID_Init(tagPID_T *_tPid,PIDInitStruct *_tPidInit)
 {
 	
 	/* 历史数据置0 */
-    _tPid->fDbuf[0] = _tPid->fDbuf[1] = _tPid->fDbuf[2] = _tPid->fError[0] = _tPid->fError[1] = _tPid->fError[2] = _tPid->fPout = _tPid->fIout = _tPid->fDout = _tPid->fCtrl_Out = 0.0f;
+    _tPid->fDbuf[0] = _tPid->fDbuf[1] = _tPid->fDbuf[2] = _tPid->fError[0] = _tPid->fError[1] = _tPid->fError[2] = _tPid->fPout = _tPid->fIout = _tPid->fDout = _tPid->fCtrl_Out = _tPid->fPre_Out = 0.0f;
 	
 	/* 参数赋值 */
 		_tPid->fKp = _tPidInit->fKp;
@@ -158,6 +158,7 @@ int PID_Add_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
 int PID_Location_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
 {
 	
+	
 	/* 设定期望值和当前值 */
     _tPid->fExp_Value  = _fExpValue;
     _tPid->fCurr_Value = _fCurrValue;
@@ -185,9 +186,13 @@ int PID_Location_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
 	//计算输出
 	_tPid->fCtrl_Out = _tPid->fPout + _tPid->fIout + _tPid->fDout;
 	
+//	_tPid->fCtrl_Out = _tPid->fCtrl_Out*0.8 + _tPid->fPre_Out*0.2;
+	
 	//输出限幅
 	if(_tPid->fCtrl_Out > _tPid->fMax_Out)
 		_tPid->fCtrl_Out = _tPid->fMax_Out;
+	
+//	_tPid->fPre_Out = _tPid->fCtrl_Out;
 	
 	return (int)_tPid->fCtrl_Out;
 	

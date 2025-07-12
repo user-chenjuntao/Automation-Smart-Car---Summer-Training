@@ -3,8 +3,8 @@
 
 #include "pid.h"
 
-#define threshold 200
-#define Basic_Speed 2200
+
+//#define Basic_Speed 2200
 
 extern tagPID_T Speedpid;
 extern tagPID_T Anglepid;

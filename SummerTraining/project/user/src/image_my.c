@@ -17,14 +17,14 @@ uint8 mid_weight_list[120] =
     1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,
-    6,6,6,6,6,6,6,6,6,6,
-    7,8,9,10,11,12,13,14,15,16,
+    1,1,1,1,1,3,4,4,4,4,
+    4,6,6,6,6,6,6,6,6,6,
+    6,6,6,6,8,8,8,9,9,9,
+    9,10,10,10,11,12,13,14,15,16,
     17,18,19,20,20,20,20,19,18,17,
     16,15,14,13,12,11,10,9,8,7,
     6,6,6,6,6,6,6,6,6,6,
-    1,1,1,1,1,1,1,1,1,1,
+    6,5,4,3,2,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,
 };
 
@@ -245,6 +245,14 @@ void research_longest_line(void)
             line = start_row;  // 记录白色区域的起始行
         }
     }
+	if (longest_line_number >= RIGHT_MAX)
+	{
+		longest_line_number = RIGHT_MAX;
+	}
+	else if (longest_line_number <= LEFT_MAX)
+	{
+		longest_line_number = LEFT_MAX;
+	}
 }
 uint8 road_left[120] = {0};         //记录x，或列数
 uint8 break_point_l[6][2] ={{0}};
@@ -675,6 +683,7 @@ void image_show(void)
 	ips200_show_uint(90,208,r_u_num,3);
 	
 	ips200_show_uint(120,208,final_mid_line,3);
+	ips200_show_uint(150,208,straight_flag,1);
 }
 
 
@@ -833,3 +842,4 @@ uint8 find_mid_line_weight(void)
     last_mid_line = mid_line_value;
     return mid_line_value;
 }
+
