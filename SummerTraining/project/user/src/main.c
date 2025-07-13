@@ -146,6 +146,19 @@ int main(void)
 		{
 			servo_pwm_value = 515;
 		}
+		if (Zebra_stop_flag == 1)
+		{
+			pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_INIT);
+			motor_pwm(0);
+			while (1)
+			{
+				if (key_get_state(KEY_4 == 1))
+				{
+					break;
+				}
+			}
+			
+		}
 		if (car_stop_flag == 1)
 		{
 			pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_INIT);

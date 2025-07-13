@@ -4,7 +4,7 @@ uint8 image_otsuThreshold_less;
 uint8 PostProcessing_image[MT9V03X_H][MT9V03X_W];                                      //用于存放二值化处理后的图像数组
 uint8 Left_Lost_Time = 0;                                                              //记录左边界无效点
 uint8 Right_Lost_Time = 0;                                                             //记录右边界无效点
-
+uint8 Zebra_stop_flag =0;
 
 
 
@@ -594,6 +594,7 @@ void image_process(void)
 	
 	image_postprocess();
 	car_stop();
+	Zebra_crossing_handle();
 	research_longest_line();
 	research_road();
 	l_d_num = Find_Left_Down_Point(MT9V03X_H-1,line);
@@ -843,3 +844,36 @@ uint8 find_mid_line_weight(void)
     return mid_line_value;
 }
 
+
+void Zebra_crossing_handle(void)
+{
+	uint8 i ,j;
+	uint8 Zebra_crossing_num = 0;
+	for (i = 40; i <= 100; i+=10)
+	{
+		for (j = 20; j < 168; j+=2)
+		{
+			if ((PostProcessing_image[i][j] == BLACK_PIXEL && PostProcessing_image[i][j-1] == WHITE_PIXEL) || (PostProcessing_image[i][j] == BLACK_PIXEL && PostProcessing_image[i][j+1] == WHITE_PIXEL))
+			{
+				Zebra_crossing_num++;
+			}
+		}
+		if (Zebra_crossing_num >= 10)
+		{
+			Zebra_stop_flag = 1;
+			break;
+		}
+		else
+		{
+			Zebra_crossing_num = 0;
+		}
+	}
+//	if (Zebra_crossing_num >= 10)
+//	{
+//		Zebra_stop_flag = 1;
+//	}
+//	else
+//	{
+//		Zebra_stop_flag = 0;
+//	}
+}

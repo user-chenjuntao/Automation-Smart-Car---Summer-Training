@@ -19,8 +19,8 @@ void servo_pid_test(void)
 	else
 	{
 		straight_flag = 0;
-		Speedpid.fKp = 1.4;
-		Speedpid.fKd = 3;
+		Speedpid.fKp = 1.5;
+		Speedpid.fKd = 4;
 		duty_pwm = 17;
 	}
 //	Control=S3010_kp*deltax+Contorl_median;

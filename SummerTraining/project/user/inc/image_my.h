@@ -25,6 +25,7 @@
 
 extern uint8 car_stop_flag;
 extern uint8 final_mid_line;
+extern uint8 Zebra_stop_flag;
 
 uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
@@ -43,6 +44,7 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r);
 uint8 my_limit_min(uint8 num1, uint8 num2);
 void straight_line_handle(void);
 uint8 find_mid_line_weight(void);
+void Zebra_crossing_handle(void);
 
 
 
