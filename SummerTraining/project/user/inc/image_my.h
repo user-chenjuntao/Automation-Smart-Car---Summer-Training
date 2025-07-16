@@ -8,6 +8,7 @@
 #include "zf_device_ips200.h"
 #include "math.h"
 #include "servo_pid.h"
+//#include "element_handle.h"
 
 
 #define WHITE_PIXEL                255
@@ -17,15 +18,25 @@
 #define THRESHOLD_MIN              255*2
 //#define BORDERLEFT                 1
 //#define BORDERRIGHT                254
-#define MID_W                      86
+#define MID_W                      87
 // 定义邻近拐点的阈值（行数差≤此值则合并，可根据实际调整）
 #define BREAKPOINT_MERGE_THRESHOLD 6
 #define LEFT_MAX                   4
 #define RIGHT_MAX                  116
 
 extern uint8 car_stop_flag;
-extern uint8 final_mid_line;
+extern float final_mid_line;
 extern uint8 Zebra_stop_flag;
+extern uint8 Left_Lost_Time;
+extern uint8 Right_Lost_Time;
+extern uint8 road_left[120];
+extern uint8 road_right[120];
+extern uint8 line;
+extern uint8 l_d_num;
+extern uint8 l_u_num;
+extern uint8 r_d_num;
+extern uint8 r_u_num;
+extern float line_error;
 
 uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
@@ -43,10 +54,11 @@ void least_squares(uint8 begin, uint8 end, uint8 *border, float *xielv, float *j
 void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r);
 uint8 my_limit_min(uint8 num1, uint8 num2);
 void straight_line_handle(void);
-uint8 find_mid_line_weight(void);
+float find_mid_line_weight(void);
 void Zebra_crossing_handle(void);
-
-
+int Continuity_Change_Left(int start,int end);
+uint8  yuanhuan_see_handle(void);
+void yuanhuan_in_handle(void);
 
 #endif
 

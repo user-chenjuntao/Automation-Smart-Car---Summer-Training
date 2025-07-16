@@ -125,6 +125,8 @@ int PID_Add_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
 	//限幅
 	if(_tPid->fIout > _tPid->fMax_Iout)
 		_tPid->fIout = _tPid->fMax_Iout;
+	if(_tPid->fIout < -_tPid->fMax_Iout)
+		_tPid->fIout = -_tPid->fMax_Iout;
 
     /* 迭代微分项的数组 */
     _tPid->fDbuf[2] = _tPid->fDbuf[1];
@@ -140,6 +142,8 @@ int PID_Add_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
 	//限幅
 	if(Delt_Out > _tPid->fMax_Out)
 		Delt_Out = _tPid->fMax_Out;
+	if(Delt_Out < -_tPid->fMax_Out)
+		Delt_Out = -_tPid->fMax_Out;
 	
     _tPid->fCtrl_Out = _tPid->fPre_Out + Delt_Out;                 /* 与前值累加 */
     _tPid->fPre_Out = _tPid->fCtrl_Out;                            /* 记录数值，为下次PID做准备 */
@@ -155,48 +159,53 @@ int PID_Add_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
  * @param _fExpValue-期望值
  * @retval int 经过PID计算后的输出值
 */
-int PID_Location_Calculate(tagPID_T *_tPid,float _fCurrValue,float _fExpValue)
+int PID_Location_Calculate(tagPID_T *_tPid, float _fCurrValue, float _fExpValue)
 {
-	
-	
-	/* 设定期望值和当前值 */
+    /* 设定期望值和当前值 */
     _tPid->fExp_Value  = _fExpValue;
     _tPid->fCurr_Value = _fCurrValue;
-	
-	/* 存放过去两次误差值 */
+    
+    /* 存放过去两次误差值 */
     _tPid->fError[2] = _tPid->fError[1];
     _tPid->fError[1] = _tPid->fError[0];
     _tPid->fError[0] = _fExpValue - _fCurrValue;
-	
-	/* 采用位置式PID */
-	
-	/* 计算P项的值 */
-	_tPid->fPout = _tPid->fKp * _tPid->fError[0];
-	
-	/* 计算D项的值 */
-	_tPid->fDout = _tPid->fKd * (_tPid->fError[0] - _tPid->fError[1]);
-	
-	/* 计算I项的值 */
-	_tPid->fIout += _tPid->fKi * _tPid->fError[0];
-	
-	//积分限幅
-	if(_tPid->fIout > _tPid->fMax_Iout)
-		_tPid->fIout = _tPid->fMax_Iout;
-	
-	//计算输出
-	_tPid->fCtrl_Out = _tPid->fPout + _tPid->fIout + _tPid->fDout;
-	
-//	_tPid->fCtrl_Out = _tPid->fCtrl_Out*0.8 + _tPid->fPre_Out*0.2;
-	
-	//输出限幅
-	if(_tPid->fCtrl_Out > _tPid->fMax_Out)
-		_tPid->fCtrl_Out = _tPid->fMax_Out;
-	
-//	_tPid->fPre_Out = _tPid->fCtrl_Out;
-	
-	return (int)_tPid->fCtrl_Out;
-	
+    
+    /* 采用位置式PID */
+    
+    /* 计算P项的值 */
+    _tPid->fPout = _tPid->fKp * _tPid->fError[0];
+    
+    /* 计算D项的值（添加低通滤波） */
+    float raw_dout = _tPid->fKd * (_tPid->fError[0] - _tPid->fError[1]);  // 原始D项
+    _tPid->fDout = _tPid->alpha * raw_dout + (1.0f - _tPid->alpha) * _tPid->fDout;  // 低通滤波
+    
+    /* 计算I项的值 */
+    _tPid->fIout += _tPid->fKi * _tPid->fError[0];
+    
+    // 积分限幅
+    if(_tPid->fIout > _tPid->fMax_Iout)
+        _tPid->fIout = _tPid->fMax_Iout;
+    if(_tPid->fIout < -_tPid->fMax_Iout)  // 补充负向限幅
+        _tPid->fIout = -_tPid->fMax_Iout;
+    
+    // 计算输出
+    _tPid->fCtrl_Out = _tPid->fPout + _tPid->fIout + _tPid->fDout;
+    
+    // 输出限幅
+    if(_tPid->fCtrl_Out > _tPid->fMax_Out)
+        _tPid->fCtrl_Out = _tPid->fMax_Out;
+    if(_tPid->fCtrl_Out < -_tPid->fMax_Out)  // 补充负向限幅
+        _tPid->fCtrl_Out = -_tPid->fMax_Out;
+    
+    return (int)_tPid->fCtrl_Out;
 }
+
+
+
+
+
+
+
 
 /**
  * @brief PID历史储存数据清空函数
@@ -215,6 +224,7 @@ void PID_Clear(tagPID_T *_tPid)
     _tPid->fCtrl_Out = _tPid->fPout = _tPid->fIout = _tPid->fDout = 0.0f;
 
     /* 目标值和当前值清零 */
-    _tPid->fCurr_Value = _tPid->fExp_Value = 0.0f;
+    _tPid->fCurr_Value = _tPid->fExp_Value = _tPid->fPre_Out =0.0f;
+	
 }
 

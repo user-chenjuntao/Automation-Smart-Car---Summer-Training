@@ -45,6 +45,8 @@ typedef struct{
 	
 }menu_item;
 
+extern uint8 car_go_flag;
+
 void moveup(void);
 void movedown(void);
 void getin(void);

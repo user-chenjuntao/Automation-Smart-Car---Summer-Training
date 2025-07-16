@@ -445,6 +445,11 @@
               <FileType>1</FileType>
               <FilePath>..\user\src\servo_pid.c</FilePath>
             </File>
+            <File>
+              <FileName>flash_my.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\user\src\flash_my.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -504,6 +509,11 @@
               <FileName>servo_pid.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\user\inc\servo_pid.h</FilePath>
+            </File>
+            <File>
+              <FileName>flash_my.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\user\inc\flash_my.h</FilePath>
             </File>
           </Files>
         </Group>

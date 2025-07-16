@@ -6,8 +6,8 @@ extern uint16 servo_pwm_value;
 uint32 angle = 90;
 float level[5] = {100,10,1,0.1,0.01};
 static uint8 level_i = 0;
-extern int16 encoder_data_1;
-extern int16 encoder_data_2;
+extern int encoder_data_1;
+extern int encoder_data_2;
 extern uint8 duty_pwm;
 extern uint8 break_num_left;
 extern uint8 break_num_right;
@@ -238,6 +238,8 @@ void menu_init(void)
     ips200_init(IPS200_TYPE_SPI);
 }
 
+uint8 car_go_flag = 0;
+
 void menu_display(void)
 {
 //	ips200_clear();
@@ -272,6 +274,10 @@ void menu_display(void)
 		case CARGO:
 			ips200_show_string(192, 16, "start");
 			ips200_show_string(208, 32, "end");
+			ips200_show_string(0,48,"data1");
+			ips200_show_string(0,64,"data2");
+			ips200_show_int(180,48,encoder_data_1,4);
+			ips200_show_int(180,64,encoder_data_2,4);
 //			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
@@ -342,6 +348,14 @@ void menu_display(void)
 		default:
 			break;
 			
+	}
+	if (cursor == 11)
+	{
+		car_go_flag = 1;
+	}
+	else
+	{
+		car_go_flag = 0;
 	}
 }
 

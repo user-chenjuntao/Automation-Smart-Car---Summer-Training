@@ -41,7 +41,8 @@
 
 #define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY                (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
-//#define PIT_ENCODER                 (TIM7_PIT) 
+#define PIT_ENCODER                 (TIM7_PIT) 
+//#define PIT_SERVO                   (TIM1_PIT) 
 #define ENCODER_1                   (TIM3_ENCODER)
 #define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
 #define ENCODER_1_B                 (TIM3_ENCODER_CH2_B5)
@@ -51,13 +52,15 @@
 #define ENCODER_2_B                 (TIM4_ENCODER_CH2_B7)
 
 
-int16 encoder_data_1 = 0;
-int16 encoder_data_2 = 0;
+int encoder_data_1 = 0;
+int encoder_data_2 = 0;
+int v1= 0;
+int v2= 0;
 
 
 //uint8 image_threshold = 0;
 //extern uint8 reference_point;
-uint16 servo_pwm_value;
+
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
 // 第一步 关闭上面所有打开的文件
@@ -68,23 +71,26 @@ uint16 servo_pwm_value;
 // **************************** 代码区域 ****************************
 int main(void)
 {
-	int16 servo_num = 0;
+	
     clock_init(SYSTEM_CLOCK_120M);                                              // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               // 初始化默认 Debug UART
 
 	// 此处编写用户代码 例如外设初始化代码等
 //    if(flash_check(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX))                      // 判断是否有数据
-    {
+//    {
 //        flash_erase_page(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);                // 擦除这一页
-    }
+//    }
     // 此处编写用户代码 例如外设初始化代码等
 	encoder_quad_init(ENCODER_1, ENCODER_1_A, ENCODER_1_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
     encoder_quad_init(ENCODER_2, ENCODER_2_A, ENCODER_2_B);                     // 初始化编码器模块与引脚 正交解码编码器模式
 	motor_init();
+	menu_init();
+	servo_init();
 	key_init(50);
     pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 50ms 周期
-//	pit_ms_init(PIT_ENCODER, 100);
-    interrupt_set_priority(PIT_PRIORITY, 3);                                    // 设置 PIT 对周期中断的中断优先级为 3
+	pit_ms_init(PIT_ENCODER, 20);
+//	pit_ms_init(PIT_SERVO, 20);
+    interrupt_set_priority(PIT_PRIORITY, 4);                                    // 设置 PIT 对周期中断的中断优先级为 4
 //	flash_read_page_to_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);           // 将数据从 flash 读取到缓冲区
 //	SpeedPidInitStruct.fKp = flash_union_buffer[0].float_type;
 //	SpeedPidInitStruct.fKi = flash_union_buffer[1].float_type;
@@ -98,9 +104,10 @@ int main(void)
 //	flash_union_buffer[3].float_type = SpeedPidInitStruct.fMax_Iout;
 //	flash_union_buffer[4].float_type = SpeedPidInitStruct.fMax_Out;
 //	flash_union_buffer[5].float_type = SpeedPidInitStruct.alpha;
-    menu_init();
-	servo_init();
+    
 	PID_Init(&Speedpid, &SpeedPidInitStruct);
+	PID_Init(&SLpid, &SLPidInitStruct);
+	PID_Init(&SRpid, &SRPidInitStruct);
 	
 	while(1)
     {
@@ -129,49 +136,55 @@ int main(void)
 			image_process();
 			mt9v03x_finish_flag=0;
 		}
-		servo_pid_test();
+//		servo_pid_test();
+//		dynamic_pid_value_set();
         menu_switch();
 		menu_display();
 		image_data_clear();
-
 		
 		
-		servo_num = PID_Location_Calculate(&Speedpid, final_mid_line, 86);
-		servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
-		if (servo_pwm_value >= 685)
+		if (car_go_flag)
 		{
-			servo_pwm_value = 685;
-		}
-		else if (servo_pwm_value <= 515)
-		{
-			servo_pwm_value = 515;
-		}
-		if (Zebra_stop_flag == 1)
-		{
-			pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_INIT);
-			motor_pwm(0);
-			while (1)
+			if (Zebra_stop_flag == 1)
 			{
-				if (key_get_state(KEY_4 == 1))
-				{
-					break;
-				}
+				total_stop();
+				
 			}
-			
-		}
-		if (car_stop_flag == 1)
-		{
-			pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_INIT);
-			motor_pwm(0);
+			if (car_stop_flag == 1)
+			{
+				total_stop();
+			}
+			else
+			{
+				
+				final_motor_control(280, 1.5, 100);
+//				motor_pwm(2000,0);
+			}
 		}
 		else
 		{
-			pwm_set_duty(SERVO_MOTOR_PWM, servo_pwm_value);
-			motor_pwm(duty_pwm);
+			Motor_stop();
 		}
+		
 		
         // 此处编写需要循环执行的代码
     }
+//	while(1)
+//	{
+////		if (key_get_state(KEY_4 == 1))
+////		{
+////			v1 = 600;
+////			v2 = 600;
+////		}
+////		if (key_get_state(KEY_1 == 1))
+////		{
+////			v1 = 0;
+////			v2 = 0;
+////		}
+//		motor_control(600,0);
+//		printf("%d,%d,%d,%d\n",encoder_data_1,encoder_data_2,v1,v2);
+////		system_delay_ms(10);
+//	}
 }
 // **************************** 代码区域 ****************************
 
@@ -180,12 +193,21 @@ void pit_encoder_handler (void)
     encoder_data_1 = encoder_get_count(ENCODER_1);                              // 获取编码器计数
     encoder_clear_count(ENCODER_1);                                             // 清空编码器计数
 
-    encoder_data_2 = encoder_get_count(ENCODER_2);                              // 获取编码器计数
+    encoder_data_2 = -encoder_get_count(ENCODER_2);                              // 获取编码器计数
     encoder_clear_count(ENCODER_2);                                             // 清空编码器计数
 }
 
 void pit_key_handler (void)
 {
     key_scanner();                                                              // 周期中断触发 标志位置位
+	
+}
+
+void pit_servo_handler (void)
+{
+	if (1)
+	{
+		Servo_control();
+	}
 	
 }
