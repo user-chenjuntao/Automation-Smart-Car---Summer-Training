@@ -37,6 +37,7 @@ extern uint8 l_u_num;
 extern uint8 r_d_num;
 extern uint8 r_u_num;
 extern float line_error;
+extern uint8 huandao_flag;
 
 uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
@@ -49,16 +50,20 @@ void research_road(void);
 void image_process(void);
 void image_show(void);
 void image_data_clear(void);
-void xieji(uint8 begin, uint8 end, float *xielv, float *jieju,uint8 y_begin,uint8 y_end);
+void xieji(uint8 begin, uint8 end, uint8 y_begin, uint8 y_end,uint8 arr[]);
 void least_squares(uint8 begin, uint8 end, uint8 *border, float *xielv, float *jieju);
 void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r);
 uint8 my_limit_min(uint8 num1, uint8 num2);
 void straight_line_handle(void);
 float find_mid_line_weight(void);
 void Zebra_crossing_handle(void);
-int Continuity_Change_Left(int start,int end);
-uint8  yuanhuan_see_handle(void);
+int Continuity_Change_Left(int start,int end, uint8 line);
+int Continuity_Change_Right(int start,int end, uint8 line);
+//uint8  yuanhuan_see_handle(void);
 void yuanhuan_in_handle(void);
+
+uint8 research_20point(uint8 num,uint8 arr[]);
+int find_min_min(uint8 arr[], int start, int end);
 
 #endif
 

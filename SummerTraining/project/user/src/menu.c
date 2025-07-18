@@ -278,6 +278,7 @@ void menu_display(void)
 			ips200_show_string(0,64,"data2");
 			ips200_show_int(180,48,encoder_data_1,4);
 			ips200_show_int(180,64,encoder_data_2,4);
+			ips200_show_uint(180,80,huandao_flag,1);
 //			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
