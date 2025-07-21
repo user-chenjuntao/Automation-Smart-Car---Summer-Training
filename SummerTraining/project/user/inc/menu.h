@@ -36,6 +36,10 @@
 #define STPID           331
 
 
+#define L_LIMIT         515
+#define R_LIMIT         685
+
+
 typedef struct{
 	
 	char name[20];

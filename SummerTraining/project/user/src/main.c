@@ -40,8 +40,10 @@
 
 
 #define PIT_MENU                    (TIM6_PIT )                                     // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
-#define PIT_PRIORITY                (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+#define PIT_PRIORITY_KEY            (TIM6_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
 #define PIT_ENCODER                 (TIM7_PIT) 
+#define PIT_PRIORITY_ENCODER        (TIM7_IRQn)                                     // 对应周期中断的中断编号 在 mm32f3277gx.h 头文件中查看 IRQn_Type 枚举体
+
 //#define PIT_SERVO                   (TIM1_PIT) 
 #define ENCODER_1                   (TIM3_ENCODER)
 #define ENCODER_1_A                 (TIM3_ENCODER_CH1_B4)
@@ -56,7 +58,9 @@ int encoder_data_1 = 0;
 int encoder_data_2 = 0;
 int v1= 0;
 int v2= 0;
-
+int speed_base = 120;//150
+float speed_k = 0.5;
+int speed_limit = 40;
 
 //uint8 image_threshold = 0;
 //extern uint8 reference_point;
@@ -87,10 +91,11 @@ int main(void)
 	menu_init();
 	servo_init();
 	key_init(50);
-    pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 50ms 周期
-	pit_ms_init(PIT_ENCODER, 20);
+    pit_ms_init(PIT_MENU, 50);                                                     // 初始化 PIT 为周期中断 20ms 周期
+	pit_ms_init(PIT_ENCODER, 10);
 //	pit_ms_init(PIT_SERVO, 20);
-    interrupt_set_priority(PIT_PRIORITY, 4);                                    // 设置 PIT 对周期中断的中断优先级为 4
+    interrupt_set_priority(PIT_PRIORITY_KEY, 4);                                    // 设置 PIT 对周期中断的中断优先级为 2
+	interrupt_set_priority(PIT_PRIORITY_ENCODER, 3);                                    // 设置 PIT 对周期中断的中断优先级为 2
 //	flash_read_page_to_buffer(FLASH_SECTION_INDEX, FLASH_PAGE_INDEX);           // 将数据从 flash 读取到缓冲区
 //	SpeedPidInitStruct.fKp = flash_union_buffer[0].float_type;
 //	SpeedPidInitStruct.fKi = flash_union_buffer[1].float_type;
@@ -121,12 +126,38 @@ int main(void)
         }
         system_delay_ms(500);                                                   // 短延时快速闪灯表示异常
     }
+//	while(1)
+//    {
+//        if(imu963ra_init())
+//        {
+//            printf("\r\nIMU963RA init error.");                                 // IMU963RA 初始化失败
+//			ips200_show_string(0, 32, "IMU963RA reinit.");
+//        }
+//        else
+//        {
+//            break;
+//        }
+//    }
     ips200_show_string(0, 16, "init success.");
+//	ips200_show_string(0, 32, "init success.");
 	system_delay_ms(1000);  
 	ips200_clear();
 	// 此处编写用户代码 例如外设初始化代码等
     // 此处编写用户代码 例如外设初始化代码等
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
     while(1)
     {
         // 此处编写需要循环执行的代码
@@ -142,23 +173,19 @@ int main(void)
 		menu_display();
 		image_data_clear();
 		
-		
+//		printf("\r\nIMU963RA gyro data:  x=%5d, y=%5d, z=%5d\r\n", imu963ra_gyro_x, imu963ra_gyro_y, imu963ra_gyro_z);
+//		system_delay_ms(50); 
 		if (car_go_flag)
 		{
-			if (Zebra_stop_flag == 1)
+
+			if (car_stop_flag == 1 || Zebra_stop_flag == 1)
 			{
-				total_stop();
-				
-			}
-			if (car_stop_flag == 1)
-			{
-				total_stop();
+				All_stop();
 			}
 			else
 			{
 				
-				final_motor_control(280, 1.5, 100);
-//				motor_pwm(2000,0);
+				final_motor_control(speed_base, speed_k, speed_limit);
 			}
 		}
 		else
@@ -169,21 +196,31 @@ int main(void)
 		
         // 此处编写需要循环执行的代码
     }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 //	while(1)
 //	{
-////		if (key_get_state(KEY_4 == 1))
+////		if(mt9v03x_finish_flag)
 ////		{
-////			v1 = 600;
-////			v2 = 600;
+////			image_process();
+////			mt9v03x_finish_flag=0;
 ////		}
-////		if (key_get_state(KEY_1 == 1))
-////		{
-////			v1 = 0;
-////			v2 = 0;
-////		}
-//		motor_control(600,0);
+////		image_data_clear();
+//		car_start();
 //		printf("%d,%d,%d,%d\n",encoder_data_1,encoder_data_2,v1,v2);
-////		system_delay_ms(10);
+//		system_delay_ms(10);
+//		
+
 //	}
 }
 // **************************** 代码区域 ****************************
@@ -205,9 +242,41 @@ void pit_key_handler (void)
 
 void pit_servo_handler (void)
 {
-	if (1)
+	if (car_go_flag)
 	{
 		Servo_control();
 	}
+	else
+	{
+		Servo_stop();
+	}
+
 	
+}
+
+void pit_motor_handler (void)
+{
+//	if (car_go_flag)
+//	{
+//		if (car_stop_flag == 1 || Zebra_stop_flag == 1)
+//		{
+//			All_stop();
+//		}
+//		else
+//		{
+//				
+//			final_motor_control(speed_base, speed_k, speed_limit);
+//		}
+//	}
+//	else
+//	{
+//		Motor_stop();
+//	}
+	
+//	car_start();
+}
+
+void pit_gyro_handler (void)
+{
+//    imu963ra_get_gyro();                                                        // 获取 IMU963RA 的角速度测量数值
 }

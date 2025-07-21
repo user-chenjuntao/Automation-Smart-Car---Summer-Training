@@ -5,7 +5,8 @@ int motorR_pwm_value = 0;
 
 extern int encoder_data_1;
 extern int encoder_data_2;
-
+extern int v1;
+extern int v2;
 void motor_init(void)
 {
 	
@@ -114,19 +115,29 @@ void Servo_stop(void)
 
 void Motor_stop(void)
 {
-	motor_pwm(0, 0);
-	motorL_pwm_value = 0;
-	motorR_pwm_value = 0;
-	encoder_data_1 = 0;
-	encoder_data_2 = 0;
-	PID_Clear(&SLpid);
-	PID_Clear(&SRpid);
+	motor_control(0, 0);
+//	motorL_pwm_value = 0;
+//	motorR_pwm_value = 0;
+//	encoder_data_1 = 0;
+//	encoder_data_2 = 0;
+//	PID_Clear(&SLpid);
+//	PID_Clear(&SRpid);
 }
 
 void All_stop(void)
 {
 	Servo_stop();
-	Motor_stop();
+	motor_pwm(0,0);
+	while (1)
+	{
+		if (key_get_state(KEY_4 == 1))
+		{
+			Zebra_stop_flag = 0;
+			car_stop_flag = 0;
+//			huandao_clear();
+			break;
+		}
+	}
 }
 
 void total_stop(void)
@@ -138,7 +149,38 @@ void total_stop(void)
 		{
 			Zebra_stop_flag = 0;
 			car_stop_flag = 0;
+//			huandao_clear();
 			break;
 		}
 	}
+}
+uint8 start1 = 0;
+
+void car_start(void)
+{
+    // 判断 KEY_1 是否短按（触发启动/停止切换）
+    if(key_get_state(KEY_1) == KEY_SHORT_PRESS)  
+    {
+        start1++;  // 切换状态计数器自增
+    }
+    
+    // 若处于“启动”状态（start1≠0）
+    if(start1 != 0)                             
+    {
+        // 奇数状态：电机以 80 占空比运行
+        if(start1 % 2 == 1)                     
+        {
+			v1 = 300;
+			v2 = 300;
+            motor_control(300, 300);              // 直接控制电机（示例：双轮80%占空比）
+            // Final_Motor_Control(80, 0.3, 30); // 注释：闭环控制（若需启用可取消注释）
+        }
+        // 偶数状态：电机停止
+        else                                    
+        {
+			v1 = 0;
+			v2 = 0;
+            motor_control(0, 0);                // 电机占空比设为0，停止运行
+        }
+    }
 }

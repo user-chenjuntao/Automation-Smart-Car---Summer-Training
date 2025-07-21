@@ -38,13 +38,15 @@ extern uint8 r_d_num;
 extern uint8 r_u_num;
 extern float line_error;
 extern uint8 huandao_flag;
+extern uint8 huandao_num_flag;
+extern uint8 crossing_flag_help;
 
 uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
 void image_filter(uint8(*image)[MT9V03X_W]);
 void car_stop(void);
-uint8 get_left_start(void);
-uint8 get_right_start(void);
+uint8 get_left_start(uint8 num);
+uint8 get_right_start(uint8 num);
 void research_longest_line(void);
 void research_road(void);
 void image_process(void);
@@ -61,7 +63,7 @@ int Continuity_Change_Left(int start,int end, uint8 line);
 int Continuity_Change_Right(int start,int end, uint8 line);
 //uint8  yuanhuan_see_handle(void);
 void yuanhuan_in_handle(void);
-
+void huandao_clear(void);
 uint8 research_20point(uint8 num,uint8 arr[]);
 int find_min_min(uint8 arr[], int start, int end);
 

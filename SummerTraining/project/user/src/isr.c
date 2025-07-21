@@ -34,7 +34,7 @@
 ********************************************************************************************************************/
 
 #include "isr.h"
-
+static uint8_t pit_tim7_cnt = 0;  // TIM7中断计数器（10ms/次，累计到2即为20ms）
 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -109,11 +109,12 @@ void TIM5_IRQHandler (void)
 void TIM6_IRQHandler (void)
 {
 	
+//	extern void pit_gyro_handler (void);
 	extern void pit_key_handler (void);
-	
     // 此处编写用户代码
 	  
-	  pit_key_handler();
+//	pit_gyro_handler();
+	pit_key_handler ();
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
 }
@@ -126,9 +127,18 @@ void TIM7_IRQHandler (void)
 {
 	extern void pit_encoder_handler (void);
 	extern void pit_servo_handler (void);
+	extern void pit_motor_handler (void);
     // 此处编写用户代码
-	pit_servo_handler ();
-	pit_encoder_handler();
+	pit_encoder_handler();  // 10ms：读取编码器
+	
+	pit_motor_handler();
+	
+    pit_tim7_cnt++;
+    if(pit_tim7_cnt >= 2)   // 20ms：执行舵机控制
+    {
+        pit_servo_handler();
+        pit_tim7_cnt = 0;
+    }
     // 此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态
 }

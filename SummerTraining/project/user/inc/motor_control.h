@@ -8,6 +8,7 @@
 #include "config.h"
 #include "image_my.h"
 #include "zf_device_key.h"
+#include "menu.h"
 
 
 #define MAX_DUTY            (70 )                                               // 最大 MAX_DUTY% 占空比
@@ -29,8 +30,9 @@
 
 //#define LEFT_PWM                    20
 //#define RIGHT_PWM                   20
-#define LIMIT_PWM_MIN              -5000
-#define LIMIT_PWM_MAX               5000
+#define LIMIT_PWM_MIN              -7000
+#define LIMIT_PWM_MAX               7000\
+
 
 void motor_init(void);
 void servo_init(void);
@@ -43,6 +45,7 @@ void Motor_stop(void);
 void All_stop(void);
 void final_motor_control(int speed, float k, int limit);
 void total_stop(void);
+void car_start(void);
 //void servo_pwm(uint32 num);
 //void move_control();
 #endif

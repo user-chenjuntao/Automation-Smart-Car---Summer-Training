@@ -1,16 +1,20 @@
 #include "menu.h"
 
-uint32 straight_speed = 6000,turn_speed = 3000;
-uint32 speed_limit = 9000,left_limit = 500,right_limit = 2500;
+uint32 left_limit = L_LIMIT;
+uint32 right_limit = R_LIMIT; 
+
 extern uint16 servo_pwm_value;
 uint32 angle = 90;
 float level[5] = {100,10,1,0.1,0.01};
 static uint8 level_i = 0;
 extern int encoder_data_1;
 extern int encoder_data_2;
-extern uint8 duty_pwm;
+
 extern uint8 break_num_left;
 extern uint8 break_num_right;
+extern int speed_base;
+extern float speed_k;
+extern int speed_limit;
 //uint32 pid[5]={}
 
 //-----------------------------------------
@@ -64,7 +68,7 @@ menu_item ImageMenu = {
 //-----------------------------------------
 menu_item Pa_Speed_Menu = {
 	.name = "PaSpeed",
-	.content = {"LineSpeed","TurnSpeed","Limit"},
+	.content = {"speed_base","speed_k","speed_limit"},
 	.number = 3,
 };
 //-----------------------------------------
@@ -88,7 +92,7 @@ menu_item Pa_Pid_Menu = {
 //-----------------------------------------
 menu_item St_Speed_Menu = {
 	.name = "StSpeed",
-	.content = {"LineSpeed","TurnSpeed","Limit"},
+	.content = {"speed_base","speed_k","speed_limit"},
 	.number = 3,
 };
 //-----------------------------------------
@@ -278,13 +282,22 @@ void menu_display(void)
 			ips200_show_string(0,64,"data2");
 			ips200_show_int(180,48,encoder_data_1,4);
 			ips200_show_int(180,64,encoder_data_2,4);
+			ips200_show_string(0,80,"huandao_flag");
 			ips200_show_uint(180,80,huandao_flag,1);
+			ips200_show_string(0,96,"crossing_flag_help");
+			ips200_show_uint(180,96,crossing_flag_help,1);
+			ips200_show_string(0,112,"line");
+			ips200_show_uint(180,112,line,3);
+			ips200_show_string(0,128,"LOST_LEFT");
+			ips200_show_uint(180,128,Left_Lost_Time,3);
+			ips200_show_string(0,144,"LOST_RIGHT");
+			ips200_show_uint(180,144,Right_Lost_Time,3);
 //			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
-			ips200_show_int(200, 16, duty_pwm, 4);
-			ips200_show_uint(200, 32, turn_speed, 4);
-			ips200_show_uint(200, 48, speed_limit, 4);
+			ips200_show_int(180, 16, speed_base, 4);
+			ips200_show_float(180, 32, speed_k, 2,2);
+			ips200_show_int(180, 48, speed_limit, 4);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -309,9 +322,9 @@ void menu_display(void)
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
 			break;
 		case STATUSSPEED:
-			ips200_show_int(200, 16, duty_pwm, 4);
-			ips200_show_uint(200, 32, turn_speed, 4);
-			ips200_show_uint(200, 48, speed_limit, 4);
+			ips200_show_int(200, 16, speed_base, 4);
+			ips200_show_float(200, 32, speed_k, 2,2);
+			ips200_show_int(200, 48, speed_limit, 4);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -414,13 +427,13 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					duty_pwm += (uint32)level[level_i];
+					speed_base += (int)level[level_i];
 					break;
 				case 212:
-					turn_speed += (uint32)level[level_i];
+					speed_k += level[level_i];
 					break;
 				case 213:
-					speed_limit += (uint32)level[level_i];
+					speed_limit += (int)level[level_i];
 					break;
 				case 221:
 					servo_pwm_value += (uint32)level[level_i];
@@ -459,13 +472,13 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					duty_pwm -= (uint32)level[level_i];
+					speed_base -= (int)level[level_i];
 					break;
 				case 212:
-					turn_speed -= (uint32)level[level_i];
+					speed_k -= level[level_i];
 					break;
 				case 213:
-					speed_limit -= (uint32)level[level_i];
+					speed_limit -= (int)level[level_i];
 					break;
 				case 221:
 					servo_pwm_value -= (uint32)level[level_i];

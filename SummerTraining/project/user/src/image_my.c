@@ -7,6 +7,8 @@ uint8 Right_Lost_Time = 0;                                                      
 uint8 Zebra_stop_flag =0;
 float line_error = 0;
 uint8 low_high_choose = 0;
+uint8 huandao_num_flag = 0;
+uint8 crossing_flag_help = 0;
 
 
 /*********************************************************
@@ -111,7 +113,7 @@ void image_postprocess(void)
 			PostProcessing_image[i][j] = (mt9v03x_image[i][j] > image_otsuThreshold_less) ? WHITE_PIXEL : BLACK_PIXEL;
 		}
 	}
-	image_filter(mt9v03x_image);
+	image_filter(PostProcessing_image);
 }
 
 //目的是为了出去一些噪点，防止对于元素判断出现问题
@@ -175,13 +177,33 @@ void car_stop(void)
 	}
 }
 
-
+uint8 research_start_point(void)
+{
+	if (PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/2] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/2-1] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/2+1] == WHITE_PIXEL)
+	{
+		return 2;
+	}
+	else if (PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4-1] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4+1] == WHITE_PIXEL)
+	{
+		return 1;
+	}
+	else if (PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4*3] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4*3-1] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][MT9V03X_W/4*3+1] == WHITE_PIXEL)
+	{
+		return 3;
+	}
+	else
+	{
+		return 2;
+	}
+}
+	
+	
 
  //&& PostProcessing_image[MT9V03X_H - 1][i - 2] == BLACK_PIXEL&& PostProcessing_image[MT9V03X_H - 1][i + 2] == BLACK_PIXEL
-uint8 get_left_start(void)
+uint8 get_left_start(uint8 num)
 {
 	uint8 i = 0;
-	for(i = MT9V03X_W/2; i > 1; i--)
+	for(i = MT9V03X_W*(num/4.0f); i > 1; i--)
 	{
 		if ((PostProcessing_image[MT9V03X_H - 1][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][i - 1] == BLACK_PIXEL) || i == 2)
 		{
@@ -191,10 +213,12 @@ uint8 get_left_start(void)
 	return 2;
 }
 
-uint8 get_right_start(void)
+
+uint8 left_point,right_point;
+uint8 get_right_start(uint8 num)
 {
 	uint8 i = 0;
-	for(i = MT9V03X_W/2; i < MT9V03X_W - 2; i++)
+	for(i = MT9V03X_W*(num/4.0f); i < MT9V03X_W - 2; i++)
 	{
 		if ((PostProcessing_image[MT9V03X_H - 1][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H - 1][i + 1] == BLACK_PIXEL ) || i == 185)
 		{
@@ -204,7 +228,10 @@ uint8 get_right_start(void)
 	return 185;
 }
 
-uint8 left_point,right_point;
+
+
+
+
 uint8 longest_line_number;           //记录最长白列的列位置，x方向上
 uint8 line;                          //记录最长白列的长度，0代表最长，y方向，行
 
@@ -212,9 +239,9 @@ void research_longest_line(void)
 {
     uint8 i, j;
     uint8 longest_length = 0;  // 记录最长白色列的长度
-    
-    left_point = get_left_start();
-    right_point = get_right_start();
+    uint8 pl = research_start_point();
+    left_point = get_left_start(pl);
+    right_point = get_right_start(pl);
     
     longest_line_number = MT9V03X_W/2;  // 默认值
     line = 119;  // 默认值（119是一个任意选择，代表较长的长度）
@@ -233,21 +260,34 @@ void research_longest_line(void)
     {
         uint8 current_length = 0;  // 当前列的白色长度
         uint8 start_row = 0;       // 当前列白色区域的起始行
-        
+//        uint8 bottom_continuous_length = 0;
+		
+		
         // 查找当前列白色区域的起始行
         for (j = MT9V03X_H - 1; j > 0; j--)
         {
-            if (PostProcessing_image[j][i] == WHITE_PIXEL && 
+//			if (PostProcessing_image[j][i] == WHITE_PIXEL)
+//			{
+//				bottom_continuous_length++;
+//			}
+            if (PostProcessing_image[(MT9V03X_H-1 + j)/2][i] == WHITE_PIXEL && 
+				PostProcessing_image[MT9V03X_H - 1][i] == WHITE_PIXEL && 
+				PostProcessing_image[j][i] == WHITE_PIXEL && 
                 PostProcessing_image[j - 1][i] == BLACK_PIXEL)
             {
-                start_row = j;
-                current_length = MT9V03X_H - start_row;  // 计算白色列的长度
-                break;
+				
+//				if (0.8*(MT9V03X_H - start_row) <= bottom_continuous_length)
+//				{
+					start_row = j;
+					current_length = MT9V03X_H - start_row;  // 计算白色列的长度
+					break;
+//				}
+                
             }
         }
         
-        // 如果没有找到黑白边界，但整列都是白色
-        if (j == 0 && PostProcessing_image[0][i] == WHITE_PIXEL)
+        // 如果没有找到黑白边界，但整列都是白色 && bottom_continuous_length>0.8*MT9V03X_H
+        if (j == 0 && PostProcessing_image[0][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H/2][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H-2][i] == WHITE_PIXEL)
         {
             start_row = 2;
             current_length = MT9V03X_H - 2;  // 整列都是白色
@@ -293,7 +333,7 @@ void research_road(void)
 			{
 				
 				road_left[i] = j;
-				if (road_left[i] == 2)
+				if (road_left[i] <= 2)
 				{
 					Left_Lost_Time++;
 				}
@@ -323,6 +363,10 @@ void research_road(void)
 			if ((PostProcessing_image[i][j] == WHITE_PIXEL && PostProcessing_image[i][j+1] == BLACK_PIXEL && PostProcessing_image[i][j+2] == BLACK_PIXEL) || j == 185)
 			{
 				road_right[i] = j;
+				if (road_right[i] >= 185)
+				{
+					Right_Lost_Time++;
+				}
 //				if (right_flag_break)
 //				{
 //					if (i >= 2 && road_right[i] - road_right[i-1] >= 8 && road_right[i] - road_right[i-2] >= 8 && break_num_right < 6)
@@ -698,8 +742,22 @@ void image_process(void)
 	}
 	
 //	num_123 = Continuity_Change_Left(MT9V03X_H, line - 2);
-	yuanhuan_in_handle();
+	
+	
+	
+	
 	crossing_add(l_d_num,l_u_num,r_d_num,r_u_num);
+	
+	if (crossing_flag_help == 0)
+	{
+		yuanhuan_in_handle();
+	}
+	
+	
+	
+	
+	
+	
 //	ips200_show_gray_image(0, 50, PostProcessing_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
 //	for (uint8 i = 0; i < MT9V03X_H; i++)
 //	{
@@ -773,7 +831,8 @@ void image_process(void)
 		
 }
 
-
+uint8 left_test = 0;
+uint8 right_test = 0;
 
 void image_show(void)
 {
@@ -802,7 +861,8 @@ void image_show(void)
 //	ips200_show_uint(150,208,straight_flag,1);
 	
 //	ips200_show_int(160,208,num_123,3);
-	ips200_show_uint(150,208,see_flag,1);
+	ips200_show_uint(150,208,left_test,1);
+	ips200_show_uint(170,208,right_test,1);
 //	ips200_show_uint(170,208,qiebuxian,3);
 	ips200_show_uint(200,208,huandao_flag,1);
 }
@@ -815,12 +875,20 @@ void image_data_clear(void)
 	Left_Lost_Time = 0;
 	Right_Lost_Time = 0;
 //	huandao_flag = 0;
+	crossing_flag_help = 0;
 
 	
 	memset(road_left, 0, sizeof(road_left));
 	memset(road_right, 0, sizeof(road_right));
 	
 	memset(center_line, 0, sizeof(center_line));
+}
+
+
+void huandao_clear(void)
+{
+	huandao_flag = 0;
+	huandao_num_flag = 0;
 }
 
 
@@ -890,10 +958,10 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 	
 	
     // 处理左边界补线
-    if (num_d_l&& num_u_l&&num_d_r&&num_u_r)
+    if (num_d_l&& num_u_l&&num_d_r&&num_u_r && huandao_flag == 0)
     {
 
-        if (abs(num_d_l-num_u_l) >= 15 && abs(num_d_r - num_u_r) >= 15)// num_l >= 2
+        if (abs(num_u_l-num_u_r) <=10 && abs(num_d_l-num_d_r) <=10 && abs(num_d_l-num_u_l) >= 15 && abs(num_d_r - num_u_r) >= 15 && Continuity_Change_Left(MT9V03X_H-5, line + 10,line) != 0 && Continuity_Change_Right(MT9V03X_H-5, line + 10,line) != 0)// num_l >= 2
         {
             // 使用最后两个断点进行线性插值
             xieji(num_u_l, num_d_l, road_left[num_u_l], road_left[num_d_l],road_left);
@@ -916,10 +984,13 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 //                else if (road_right[i] >= MT9V03X_W - 2)
 //                    road_right[i] = MT9V03X_W - 2;
 //            }
+			huandao_clear();
+			crossing_flag_help = 1;
         }
+		
     
     }
-	if (num_d_l == 0 && num_d_r == 0 && num_u_l >= 0 && num_u_r >= 0)
+	else if (num_d_l == 0 && num_d_r == 0 && num_u_l >= MT9V03X_H/2+5 && num_u_r >= MT9V03X_H/2+5 && abs(num_u_l-num_u_r) <=12 && huandao_flag == 0)
 	{
 		if (abs(num_u_l - num_u_r) < 12)
 		{
@@ -942,6 +1013,8 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
                 else if (road_right[i] >= MT9V03X_W - 2)
                     road_right[i] = MT9V03X_W - 2;
             }
+//			huandao_clear();
+			crossing_flag_help = 1;
 		}
 	}
 }
@@ -1023,17 +1096,17 @@ void Zebra_crossing_handle(void)
   Sample     continuity_change_flag=Continuity_Change_Left(int start,int end)
   @note      连续性的阈值设置为5，可更改
 -------------------------------------------------------------------------------------------------------------------*/
-int Continuity_Change_Left(int start,int end, uint8 line)
+int Continuity_Change_Left(int start,int end, uint8 ref_line)
 {
     int i;
     int t;
     int continuity_change_flag=0;
-    if(Right_Lost_Time>=0.8*(MT9V03X_H - line))//大部分都丢线，没必要判断了
+    if(Right_Lost_Time>=0.8*(MT9V03X_H - ref_line))//大部分都丢线，没必要判断了
        return 1;
-    if(start>=MT9V03X_H-25)//数组越界保护
-        start=MT9V03X_H-25;
-    if(end<=10)
-       end=10;
+    if(start>=MT9V03X_H-5)//数组越界保护
+        start=MT9V03X_H-5;
+    if(end<=15)
+       end=15;
     if(start<end)//都是从下往上计算的，反了就互换一下
     {
        t=start;
@@ -1059,12 +1132,12 @@ int Continuity_Change_Left(int start,int end, uint8 line)
   Sample     continuity_change_flag=Continuity_Change_Right(int start,int end)
   @note      连续性的阈值设置为5，可更改
 -------------------------------------------------------------------------------------------------------------------*/
-int Continuity_Change_Right(int start,int end, uint8 line)
+int Continuity_Change_Right(int start,int end, uint8 ref_line)
 {
     int i;
     int t;
     int continuity_change_flag=0;
-    if(Right_Lost_Time>=0.8*(MT9V03X_H - line))//大部分都丢线，没必要判断了
+    if(Right_Lost_Time>=0.8*(MT9V03X_H - ref_line))//大部分都丢线，没必要判断了
        return 1;
     if(start>=MT9V03X_H-5)//数组越界保护
         start=MT9V03X_H-5;
@@ -1216,8 +1289,9 @@ uint8 Continuity_reduce_left(uint8 arr[])
 	uint8 i = 0;
 	uint8 reduce_left = 0;
 	uint8 wrong_num = 0;
-	for (i = MT9V03X_H - 3; i > MT9V03X_H - 22; i--)
+	for (i = MT9V03X_H - 5; i > MT9V03X_H - 40; i--)
 	{
+//		if (arr[i] - arr[i-3] < -)
 		if (arr[i] -arr[i-1] > 0)
 		{
 			wrong_num++;
@@ -1229,6 +1303,62 @@ uint8 Continuity_reduce_left(uint8 arr[])
 		}
 	}
 	return reduce_left;
+}
+
+/**
+ * @brief 检测左边界是否存在圆弧（从下往上处理行：start_row > end_row）
+ * @param arr       边界列坐标数组（如 road_left）
+ * @param start_row 起始行（更靠下，行号大）
+ * @param end_row   结束行（更靠上，行号小）
+ * @return arr是左边界，arr_another是右边界
+ */
+uint8 detect_left_arc(uint8 arr[],uint8 arr_another[], uint8 start_row, uint8 end_row) {
+    // 1. 合法性检查：必须从下往上（start_row > end_row）
+    if (start_row <= end_row) return 0; 
+
+    int8 diff1[MT9V03X_H] = {0}; // 一阶差分：当前行（下） - 上一行（上）的列变化
+    int8 diff2[MT9V03X_H] = {0}; // 二阶差分：一阶差分的变化率（反映弯曲）
+	uint8 num = 0;
+	uint8 wrong_num = 0;
+	uint8 sum = 0;
+
+    // 2. 计算一阶差分（从下往上遍历行，i递减）
+    for (uint8 i = start_row; i > end_row; i--) {
+        if (i == 0) break; // 防止 i-1 越界（行号0是最顶部）
+        diff1[i] = arr[i] - arr[i-1]; // 当前行（下） - 上一行（上）的列变化
+		if (diff1[i] > 0)
+		{
+			wrong_num++;
+		}
+		if (wrong_num > 2)
+		{
+			return 0;
+		}
+		if (arr_another[i] >= MT9V03X_W-3)
+		{
+			sum++;
+		}
+    }
+
+    // 3. 计算二阶差分（反映斜率的变化，i递减遍历）
+    for (uint8 i = start_row - 1; i > end_row; i--) {
+        if (i + 1 >= MT9V03X_H) break; // 防止 i+1 越界
+        diff2[i] = diff1[i] - diff1[i+1]; // 当前差分 - 下一行（更靠下）的差分
+		if (abs(diff2[i]) >=1)
+		{
+			num++;
+		}
+    }
+	if (num > 5 && sum >= (start_row-end_row-10))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+	
+
 }
 
 uint8 research_black_point(void)
@@ -1274,6 +1404,12 @@ uint8 research_black_point(void)
 //}
 
 uint8 going_flag = 0;
+static uint8 exit_cnt_1 = 0;
+static uint8 exit_cnt_2_1 = 0;
+static uint8 exit_cnt_2_2 = 0;
+static uint8 exit_cnt_3 = 0;
+static uint8 exit_cnt_4 = 0;
+static uint8 exit_cnt_0 = 0;
 
 void yuanhuan_in_handle(void)
 {
@@ -1281,36 +1417,87 @@ void yuanhuan_in_handle(void)
 	uint8 u_num = 0;
 	
 	u_num = Find_Right_Up_Point(MT9V03X_H-1,line,1);
-	if (huandao_flag == 0)
+	if (huandao_flag == 0 && huandao_num_flag == 0)
 	{
-		if (Continuity_Change_Left(MT9V03X_H, line + 2,line) == 0 && Continuity_Change_Right(MT9V03X_H, line + 2,line) != 0 && r_u_num > 0 && r_d_num > 0)
+		
+		if (Continuity_Change_Left(MT9V03X_H-25, line + 2,line) == 0 && Continuity_Change_Right(MT9V03X_H, line + 2,line) != 0 && r_u_num > 0 && r_d_num > 0 && line < 5 && Left_Lost_Time <= MT9V03X_H/10 && Right_Lost_Time >= MT9V03X_H/3)
 		{
-			huandao_flag = 1;
+			exit_cnt_1++;
+			if (exit_cnt_1 >= 1)
+			{
+				huandao_flag = 1;
+				exit_cnt_1 = 0;
+				exit_cnt_2_1 = 0;
+			}
+			
+			
 		}
-		else if (r_d_num == 0 && r_u_num != 0)
+		else if (r_d_num == 0 && r_u_num != 0 && Continuity_Change_Left(MT9V03X_H-15, line + 10,line) == 0 && Continuity_Change_Right(MT9V03X_H, line + 2,line) != 0 && line < 5 && Left_Lost_Time <=MT9V03X_H/10 && Right_Lost_Time >= MT9V03X_H/3)
 		{
-			huandao_flag = 2;
+			exit_cnt_2_1++;
+			if (exit_cnt_2_1 >= 3)
+			{
+				huandao_flag = 2;
+				exit_cnt_1 = 0;
+				exit_cnt_2_1 = 0;
+			}
+			
+		}
+		else
+		{
+			exit_cnt_1 = 0;
+			exit_cnt_2_1 = 0;
 		}
 	}
 	else if (huandao_flag == 1)
-	{
+	{// && Continuity_Change_Left(MT9V03X_H-15, line + 10,line) == 0
 		uint8 yuanhuan_qiedian = 0;
+		
 		yuanhuan_qiedian = find_min(road_right, r_u_num+5, 10);
+		if (r_d_num == 0 && r_u_num != 0)
+		{
+			exit_cnt_2_2++;
+			if (exit_cnt_2_2 >= 1)
+			{
+				huandao_flag = 2;
+				exit_cnt_2_2 = 0;
+			}
+			
+			
+		}
+		else
+		{
+			exit_cnt_2_2 = 0;
+		}
 		if (yuanhuan_qiedian)
 		{
 			xieji(yuanhuan_qiedian, r_d_num, road_right[yuanhuan_qiedian], road_right[r_d_num], road_right);
             
 		}
-		if (r_d_num == 0 && r_u_num != 0)
-		{
-			huandao_flag = 2;
-		}
+		
 	}
 	else if (huandao_flag == 2)
-	{//
+	{// && detect_left_arc(road_left,road_right,MT9V03X_H-3,MT9V03X_H-38)
 		uint8 qiebuxian = 0;
 		going_flag = 0;
+		
 		qiebuxian = find_min_min(road_right, MT9V03X_H-5, u_num - 5);
+		
+		if (r_d_num == 0 && r_u_num == 0)
+		{
+			exit_cnt_3++;
+			if (exit_cnt_3 >= 1)
+			{
+				huandao_flag = 3;
+				exit_cnt_3 = 0;
+			}
+			
+		}
+		else
+		{
+			exit_cnt_3 = 0;
+		}
+		
 		if (qiebuxian > 0)
 		{
 			xieji(qiebuxian, MT9V03X_H-5,road_right[qiebuxian], MT9V03X_W-20, road_right);
@@ -1318,17 +1505,14 @@ void yuanhuan_in_handle(void)
 		if (u_num > 10 && r_d_num == 0 && abs(u_num - 45) <= 20)
 		{
 			xieji(u_num, MT9V03X_H-5, road_right[u_num], 20,road_left);
-			xieji(10, u_num, MT9V03X_W-3, road_right[u_num],road_left);
+			xieji(10, u_num, MT9V03X_W-2, road_right[u_num],road_left);
 			for (uint8 i = 10; i <= u_num; i++)
 			{
 				road_right[i]=MT9V03X_W-3;
 			}
 //			low_high_choose = 1;
 		}
-		if (r_d_num == 0 && r_u_num == 0)
-		{
-			huandao_flag = 3;
-		}
+		
 //		if (going_flag == 1 && Continuity_reduce_left(road_left))
 //		{
 //			huandao_flag = 2;
@@ -1336,7 +1520,23 @@ void yuanhuan_in_handle(void)
 	}
 	else if (huandao_flag == 3)
 	{
+		
 		uint8 left_new_point = find_max(road_left, MT9V03X_H-5, 20);
+		if (Continuity_Change_Left(MT9V03X_H-10, line + 10,line) == 0 && Continuity_Change_Right(MT9V03X_H, line + 2,line) != 0 && u_num > 0)
+		{
+			exit_cnt_4++;
+			if (exit_cnt_4 >= 1)
+			{
+				huandao_flag = 4;
+				exit_cnt_4 = 0;
+			}
+			
+			
+		}
+		else
+		{
+			exit_cnt_4 = 0;
+		}
 //		uint8 right_add_point = research_black_point();
 		if (left_new_point > 0)
 		{
@@ -1349,20 +1549,39 @@ void yuanhuan_in_handle(void)
 		}
 		else if (left_new_point == 0 && going_flag == 1)
 		{
-			xieji(5, MT9V03X_H, MT9V03X_W-40, 3, road_left);
+			xieji(5, MT9V03X_H, MT9V03X_W-60, 3, road_left);
+			for (uint8 i = 5; i < MT9V03X_H-35; i++)
+			{
+				road_right[i] = MT9V03X_W-3;
+			}
 		}
-		if (Continuity_Change_Left(MT9V03X_H, line + 2,line) == 0 && Continuity_Change_Right(MT9V03X_H, line + 2,line) != 0 && u_num > 0)
-		{
-			huandao_flag = 4;
-		}
+		
 	}
 	else if (huandao_flag == 4)
 	{
-		xieji(70, MT9V03X_H-5, MT9V03X_W-60, MT9V03X_W-45,road_right);// || u_num > 140
-		if (Continuity_Change_Left(MT9V03X_H, line + 10, line) == 0 && (Continuity_Change_Right(MT9V03X_H, line + 10, line) == 0))
+		
+		left_test = Continuity_Change_Left(MT9V03X_H-7, line+25, line);
+		right_test = Continuity_Change_Right(MT9V03X_H-7, line+25, line);
+		if (left_test == 0 && right_test == 0 && l_d_num == 0 && r_d_num == 0)
 		{
-			huandao_flag = 0;
+			exit_cnt_0++;
+			if (exit_cnt_0 >=1)
+			{
+				huandao_flag = 0;
+				huandao_num_flag = 10;
+				exit_cnt_0 = 0;
+			}
+			
 		}
+		else
+		{
+			exit_cnt_0 = 0;
+		}
+		if (huandao_flag != 0)
+		{
+			xieji(70, MT9V03X_H-5, MT9V03X_W-60, MT9V03X_W-45,road_right);// || u_num > 140
+		}
+		
 	}
 }
 
