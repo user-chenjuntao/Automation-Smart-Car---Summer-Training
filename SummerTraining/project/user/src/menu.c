@@ -112,7 +112,7 @@ menu_item St_Pid_Menu = {
 	.number = 6,
 };
 
-static uint16 cursor = 1;
+uint16 cursor = 1;
 static uint8 currentIndex = 1;
 static uint8 pastIndex = 0;
 menu_item *currentMenu=&main_Menu;
@@ -363,7 +363,7 @@ void menu_display(void)
 			break;
 			
 	}
-	if (cursor == 11)
+	if (cursor == 11 || (cursor > 200 && cursor < 220))
 	{
 		car_go_flag = 1;
 	}
@@ -371,6 +371,8 @@ void menu_display(void)
 	{
 		car_go_flag = 0;
 	}
+	
+	
 }
 
 
@@ -427,7 +429,7 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base += (int)level[level_i];
+					speed_base += (int)level[level_i]*3;
 					break;
 				case 212:
 					speed_k += level[level_i];
@@ -472,7 +474,7 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base -= (int)level[level_i];
+					speed_base -= (int)level[level_i]*3;
 					break;
 				case 212:
 					speed_k -= level[level_i];

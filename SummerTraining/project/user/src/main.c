@@ -58,9 +58,9 @@ int encoder_data_1 = 0;
 int encoder_data_2 = 0;
 int v1= 0;
 int v2= 0;
-int speed_base = 120;//150
-float speed_k = 0.5;
-int speed_limit = 40;
+int speed_base = 0;//122
+float speed_k = 0;//0.5
+int speed_limit = 5000;//40
 
 //uint8 image_threshold = 0;
 //extern uint8 reference_point;
@@ -171,33 +171,21 @@ int main(void)
 //		dynamic_pid_value_set();
         menu_switch();
 		menu_display();
-		image_data_clear();
+		
 		
 //		printf("\r\nIMU963RA gyro data:  x=%5d, y=%5d, z=%5d\r\n", imu963ra_gyro_x, imu963ra_gyro_y, imu963ra_gyro_z);
 //		system_delay_ms(50); 
-		if (car_go_flag)
-		{
-
-			if (car_stop_flag == 1 || Zebra_stop_flag == 1)
-			{
-				All_stop();
-			}
-			else
-			{
-				
-				final_motor_control(speed_base, speed_k, speed_limit);
-			}
-		}
-		else
-		{
-			Motor_stop();
-		}
 		
+		//
+		
+		image_data_clear();
+		printf("%d,%d,%d,%d\n",encoder_data_1,encoder_data_2,speed_base,speed_base);
+//		system_delay_ms(5);
 		
         // 此处编写需要循环执行的代码
     }
 	
-	
+
 	
 	
 	
@@ -244,7 +232,7 @@ void pit_servo_handler (void)
 {
 	if (car_go_flag)
 	{
-		Servo_control();
+//		Servo_control();
 	}
 	else
 	{
@@ -256,24 +244,29 @@ void pit_servo_handler (void)
 
 void pit_motor_handler (void)
 {
-//	if (car_go_flag)
-//	{
-//		if (car_stop_flag == 1 || Zebra_stop_flag == 1)
-//		{
-//			All_stop();
-//		}
-//		else
-//		{
-//				
-//			final_motor_control(speed_base, speed_k, speed_limit);
-//		}
-//	}
-//	else
-//	{
-//		Motor_stop();
-//	}
+	if (car_go_flag)
+	{
+
+		if (car_stop_flag == 1 || Zebra_stop_flag == 1)
+		{
+			car_go_flag = 0;
+			cursor = 1;
+		}
+		else
+		{
+//			
+			final_motor_control(speed_base, speed_k, speed_limit);
+			
+				
+		}
+	}
+	else
+	{
+		Motor_stop();
+	}
 	
-//	car_start();
+	
+	
 }
 
 void pit_gyro_handler (void)

@@ -88,6 +88,7 @@ int Limit_int(int left_limit, int target_num, int right_limit)
 void Servo_control(void)
 {
 	int16 servo_num = 0;
+//	servo_num = PID_Location_Calculate(&Speedpid, line_error, 0);
 	servo_num = PID_Location_Calculate(&Speedpid, line_error, 0);
 	servo_pwm_value = SERVO_MOTOR_INIT + servo_num;
 	servo_pwm_value = Limit_int(SERVO_MOTOR_LEFT_LIMIT, servo_pwm_value, SERVO_MOTOR_RIGHT_LIMIT);

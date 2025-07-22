@@ -31,7 +31,13 @@
 //#define LEFT_PWM                    20
 //#define RIGHT_PWM                   20
 #define LIMIT_PWM_MIN              -7000
-#define LIMIT_PWM_MAX               7000\
+#define LIMIT_PWM_MAX               7000
+
+
+
+extern uint16 servo_pwm_value;
+extern int motorL_pwm_value;
+extern int motorR_pwm_value;
 
 
 void motor_init(void);

@@ -876,7 +876,7 @@ void image_data_clear(void)
 	Right_Lost_Time = 0;
 //	huandao_flag = 0;
 	crossing_flag_help = 0;
-
+	Zebra_stop_flag = 0;
 	
 	memset(road_left, 0, sizeof(road_left));
 	memset(road_right, 0, sizeof(road_right));
@@ -1082,11 +1082,73 @@ void Zebra_crossing_handle(void)
 		else
 		{
 			Zebra_crossing_num = 0;
-			Zebra_stop_flag = 0;
+			
 		}
 	}
 
 }
+
+//// 优化参数（进一步减少计算）
+//#define ZEBRA_ROW_STEP 2         // 行间隔采样（每2行扫1行）
+//#define ZEBRA_COL_STEP 2         // 列间隔采样（每2列扫1列）
+//#define ZEBRA_ROW_RATIO_START 0.4f  // 检测行范围上移（更聚焦中下部）
+//#define ZEBRA_ROW_RATIO_END   0.7f
+//#define MIN_EDGES_PER_ROW 10      // 降低边缘计数阈值（因间隔采样）
+//#define MIN_CONTINUOUS_ROWS 2
+//#define MIN_EDGE_GAP 4           // 增大间距阈值（间隔采样后边缘更稀疏）
+
+//uint8 Zebra_stop_flag = 0;
+
+//void Zebra_crossing_handle(void)
+//{
+//    // 1. 动态计算更小的检测范围
+//    uint8 start_row = (uint8)(MT9V03X_H * ZEBRA_ROW_RATIO_START);
+//    uint8 end_row = (uint8)(MT9V03X_H * ZEBRA_ROW_RATIO_END);
+//    uint8 start_col = (uint8)(MT9V03X_W * 0.15f);  // 进一步缩小列范围
+//    uint8 end_col = (uint8)(MT9V03X_W * 0.85f);
+
+//    uint8 continuous_valid_rows = 0;
+
+//    // 2. 行间隔采样（每ZEBRA_ROW_STEP行扫1行，减少50%行遍历）
+//    for (uint8 i = start_row; i <= end_row; i += ZEBRA_ROW_STEP)
+//    {
+//        uint8 edge_count = 0;
+//        uint8 last_edge_col = 0;
+
+//        // 3. 列间隔采样（每ZEBRA_COL_STEP列扫1列，减少50%列遍历）
+//        for (uint8 j = start_col; j < end_col - ZEBRA_COL_STEP; j += ZEBRA_COL_STEP)
+//        {
+//            // 简化边缘判断：只检测间隔后的列跳变（等效原逻辑但计算更少）
+//            if (PostProcessing_image[i][j] != PostProcessing_image[i][j + ZEBRA_COL_STEP])
+//            {
+//                // 过滤近邻噪声（因间隔采样，边缘间距阈值可增大）
+//                if (edge_count == 0 || (j - last_edge_col) >= MIN_EDGE_GAP)
+//                {
+//                    edge_count++;
+//                    last_edge_col = j;
+//                    // 提前退出
+//                    if (edge_count > MIN_EDGES_PER_ROW) break;
+//                }
+//            }
+//        }
+
+//        // 4. 简化判定逻辑
+//        if (edge_count >= MIN_EDGES_PER_ROW)
+//        {
+//            if (++continuous_valid_rows >= MIN_CONTINUOUS_ROWS)
+//            {
+//                Zebra_stop_flag = 1;
+//                return;  // 找到后立即退出，减少后续计算
+//            }
+//        }
+//        else
+//        {
+//            continuous_valid_rows = 0;
+//        }
+//    }
+
+//    Zebra_stop_flag = 0;
+//}
 
 
 /*-------------------------------------------------------------------------------------------------------------------
