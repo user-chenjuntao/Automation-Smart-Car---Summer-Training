@@ -40,8 +40,9 @@ extern float line_error;
 extern uint8 huandao_flag;
 extern uint8 huandao_num_flag;
 extern uint8 crossing_flag_help;
+extern uint8 num_line;
 
-uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
+//uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);
 void image_filter(uint8(*image)[MT9V03X_W]);
 void car_stop(void);
@@ -62,10 +63,12 @@ void Zebra_crossing_handle(void);
 int Continuity_Change_Left(int start,int end, uint8 line);
 int Continuity_Change_Right(int start,int end, uint8 line);
 //uint8  yuanhuan_see_handle(void);
-void yuanhuan_in_handle(void);
+void yuanhuan_right_in_handle(void);
 void huandao_clear(void);
 uint8 research_20point(uint8 num,uint8 arr[]);
 int find_min_min(uint8 arr[], int start, int end);
+void yuanhuan_left_in_handle(void);
+void speed_strategy(void);
 
 #endif
 

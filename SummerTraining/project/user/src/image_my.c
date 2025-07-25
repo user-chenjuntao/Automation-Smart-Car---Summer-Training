@@ -10,6 +10,8 @@ uint8 low_high_choose = 0;
 uint8 huandao_num_flag = 0;
 uint8 crossing_flag_help = 0;
 
+extern int speed_base;
+
 
 /*********************************************************
 ** //图像权重数组  //权重越靠上，车转弯越早
@@ -18,17 +20,33 @@ uint8 mid_weight_list[120] =
 {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,
     1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,6,6,
-    6,6,6,6,8,8,8,9,9,9,
-    9,10,10,10,11,12,13,14,15,16,
-    17,18,20,24,20,20,19,19,18,17,
+    6,8,10,12,13,14,15,16,17,18,
+    19,20,21,24,25,26,27,28,24,22,
+    21,18,18,18,17,17,16,16,16,16,
     16,15,14,13,12,11,10,9,8,7,
     6,6,6,6,6,6,6,6,6,6,
     6,5,4,3,2,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,0,0,0,0,0,
 };
+
+//uint8 mid_weight_list[120] = 
+//{
+//    0,0,0,0,0,0,0,0,0,0,
+//    0,0,0,0,0,0,0,0,0,0,
+//    0,0,0,0,0,0,0,0,0,0,
+//    1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,6,6,
+//    6,6,6,6,8,8,8,9,9,9,
+//    9,10,11,12,13,14,15,16,17,18,
+//    19,20,24,20,20,20,19,19,18,17,
+//    16,15,14,13,12,11,10,9,8,7,
+//    6,6,6,6,6,6,6,6,6,6,
+//    6,5,4,3,2,1,1,1,1,1,
+//    1,1,1,1,1,0,0,0,0,0,
+//};
 
 uint8 low_weight_list[120] = 
 {
@@ -49,63 +67,119 @@ uint8 low_weight_list[120] =
 float final_mid_line = MID_W;   // 最终输出的中线值
 float last_mid_line = MID_W;    // 上次中线值
 
-//-------------------------------------------------------------------------------------
-//使用大津法进行二值化处理
-//-------------------------------------------------------------------------------------
-uint8 otsuThreshold_less(uint8 *image, uint16 width, uint16 height)
+////-------------------------------------------------------------------------------------
+////使用大津法进行二值化处理
+////-------------------------------------------------------------------------------------
+//uint8 otsuThreshold_less(uint8 *image, uint16 width, uint16 height)
+//{
+//    #define GrayScale 256
+//    int pixel_count[GrayScale] = {0};//每个灰度值所占像素个数
+//    float pixel_account[GrayScale] = {0};//每个灰度值所占总像素比例
+//    int i,j;   
+//    int pixel_sum = width * height;   //总像素点
+//    uint8 threshold = 0;
+//    uint8* pixel_data = image;  //指向像素数据的指针
+
+
+//    //统计灰度级中每个像素在整幅图像中的个数  
+//    for (i = 0; i < height; i++)
+//    {
+//        for (j = 0; j < width; j++)
+//        {
+//            pixel_count[(int)pixel_data[i * width + j]]++;  //将像素值作为计数数组的下标
+
+//        }
+//    }
+//    float u = 0;  
+//    for (i = 0; i < GrayScale; i++)
+//    {
+//        pixel_account[i] = (float)pixel_count[i] / pixel_sum;   //计算每个像素在整幅图像中的比例  
+//        u += i * pixel_account[i];  //总平均灰度
+//    }
+
+//      
+//    float variance_max=0.0;  //最大类间方差
+//	float variance;
+//    float w0 = 0, avgValue  = 0;  //w0 前景比例 ，avgValue 前景平均灰度
+//    for(int i = 0; i < 256; i++)     //每一次循环都是一次完整类间方差计算 (两个for叠加为1个)
+//    {  
+//        w0 += pixel_account[i];  //假设当前灰度i为阈值, 0~i 灰度像素所占整幅图像的比例即前景比例
+//        avgValue  += i * pixel_account[i];        
+//        if (w0 <= 0 || w0 >= 1)
+//			continue;
+//        variance = pow((avgValue/w0 - u), 2) * w0 /(1 - w0);    //类间方差   
+//        if(variance > variance_max) 
+//        {  
+//            variance_max = variance;  
+//            threshold = i;  
+//        }  
+//    } 
+
+//    return threshold;
+
+//}
+
+int My_Adapt_Threshold(uint8*image,uint16 width, uint16 height)   //大津算法，注意计算阈值的一定要是原图像
 {
     #define GrayScale 256
-    int pixel_count[GrayScale] = {0};//每个灰度值所占像素个数
-    float pixel_account[GrayScale] = {0};//每个灰度值所占总像素比例
-    int i,j;   
-    int pixel_sum = width * height;   //总像素点
-    uint8 threshold = 0;
-    uint8* pixel_data = image;  //指向像素数据的指针
-
-
-    //统计灰度级中每个像素在整幅图像中的个数  
-    for (i = 0; i < height; i++)
-    {
-        for (j = 0; j < width; j++)
-        {
-            pixel_count[(int)pixel_data[i * width + j]]++;  //将像素值作为计数数组的下标
-
-        }
-    }
-    float u = 0;  
+    int pixelCount[GrayScale];
+    float pixelPro[GrayScale];
+    int i, j;
+    int pixelSum = width * height/4;
+    int  threshold = 0;
+    uint8* data = image;  //指向像素数据的指针
     for (i = 0; i < GrayScale; i++)
     {
-        pixel_account[i] = (float)pixel_count[i] / pixel_sum;   //计算每个像素在整幅图像中的比例  
-        u += i * pixel_account[i];  //总平均灰度
+        pixelCount[i] = 0;
+        pixelPro[i] = 0;
     }
-
-      
-    float variance_max=0.0;  //最大类间方差
-	float variance;
-    float w0 = 0, avgValue  = 0;  //w0 前景比例 ，avgValue 前景平均灰度
-    for(int i = 0; i < 256; i++)     //每一次循环都是一次完整类间方差计算 (两个for叠加为1个)
-    {  
-        w0 += pixel_account[i];  //假设当前灰度i为阈值, 0~i 灰度像素所占整幅图像的比例即前景比例
-        avgValue  += i * pixel_account[i];        
-        if (w0 <= 0 || w0 >= 1)
-			continue;
-        variance = pow((avgValue/w0 - u), 2) * w0 /(1 - w0);    //类间方差   
-        if(variance > variance_max) 
-        {  
-            variance_max = variance;  
-            threshold = i;  
-        }  
-    } 
-
-    return threshold;
-
+    uint32 gray_sum=0;
+    for (i = 0; i < height; i+=2)//统计灰度级中每个像素在整幅图像中的个数
+    {
+        for (j = 0; j <width; j+=2)
+        {
+            pixelCount[(int)data[i * width + j]]++;  //将当前的点的像素值作为计数数组的下标
+            gray_sum+=(int)data[i * width + j];       //灰度值总和
+        }
+    }
+    for (i = 0; i < GrayScale; i++) //计算每个像素值的点在整幅图像中的比例
+    {
+        pixelPro[i] = (float)pixelCount[i] / pixelSum;
+    }
+    float w0, w1, u0tmp, u1tmp, u0, u1, u, deltaTmp, deltaMax = 0;
+    w0 = w1 = u0tmp = u1tmp = u0 = u1 = u = deltaTmp = 0;
+    for (j = 0; j < GrayScale; j++)//遍历灰度级[0,255]
+    {
+        w0 += pixelPro[j];  //背景部分每个灰度值的像素点所占比例之和   即背景部分的比例
+        u0tmp += j * pixelPro[j];  //背景部分 每个灰度值的点的比例 *灰度值
+        w1=1-w0;
+        u1tmp=gray_sum/pixelSum-u0tmp;
+        u0 = u0tmp / w0;              //背景平均灰度
+        u1 = u1tmp / w1;              //前景平均灰度
+        u = u0tmp + u1tmp;            //全局平均灰度
+        deltaTmp = w0 * pow((u0 - u), 2) + w1 * pow((u1 - u), 2);//平方
+        if (deltaTmp > deltaMax)
+        {
+            deltaMax = deltaTmp;//最大类间方差法
+            threshold = j;
+        }
+        if (deltaTmp < deltaMax)
+        {
+            break;
+        }
+    }
+    if(threshold>255)
+        threshold=255;
+    if(threshold<0)
+        threshold=0;
+  return threshold;
 }
 
 
 void image_postprocess(void)
 {
 	uint8 i = 0, j = 0;
-	image_otsuThreshold_less = otsuThreshold_less(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
+	image_otsuThreshold_less = My_Adapt_Threshold(*mt9v03x_image,MT9V03X_W,MT9V03X_H);
 	for (i = 0; i < MT9V03X_H; i++)
 	{
 		for (j = 0; j < MT9V03X_W; j++)
@@ -113,7 +187,7 @@ void image_postprocess(void)
 			PostProcessing_image[i][j] = (mt9v03x_image[i][j] > image_otsuThreshold_less) ? WHITE_PIXEL : BLACK_PIXEL;
 		}
 	}
-	image_filter(PostProcessing_image);
+//	image_filter(PostProcessing_image);
 }
 
 //目的是为了出去一些噪点，防止对于元素判断出现问题
@@ -161,13 +235,13 @@ void car_stop(void)
 	
 	for (i = MT9V03X_H - 1; i > MT9V03X_H - 6; i--)
 	{
-		for (j = 1; j < MT9V03X_W; j++)
+		for (j = 30; j < MT9V03X_W-30; j += 2)
 		{
 			if (PostProcessing_image[i][j] == BLACK_PIXEL)
 				black_num++;
 		}
-	}
-	if (black_num > 750)
+	}// || (Left_Lost_Time > 85 && Right_Lost_Time > 85)
+	if (black_num > 285)
 	{
 		car_stop_flag = 1;
 	}
@@ -247,7 +321,7 @@ void research_longest_line(void)
     line = 119;  // 默认值（119是一个任意选择，代表较长的长度）
     
     // 确保左右边界合理
-    if (left_point >= right_point)
+    if (left_point+1 >= right_point)
 	{
 		// 设置安全默认值或添加错误处理
 		longest_line_number = MT9V03X_W / 2;
@@ -256,49 +330,60 @@ void research_longest_line(void)
 	}
 		
     
-    for (i = left_point; i < right_point; i++)
+    for (i = left_point+1; i < right_point; i++)
     {
-        uint8 current_length = 0;  // 当前列的白色长度
-        uint8 start_row = 0;       // 当前列白色区域的起始行
-//        uint8 bottom_continuous_length = 0;
+//        uint8 current_length = 0;  // 当前列的白色长度
+//        uint8 start_row = 0;       // 当前列白色区域的起始行
+        uint8 bottom_continuous_length = 0;
 		
 		
         // 查找当前列白色区域的起始行
         for (j = MT9V03X_H - 1; j > 0; j--)
         {
-//			if (PostProcessing_image[j][i] == WHITE_PIXEL)
-//			{
-//				bottom_continuous_length++;
-//			}
-            if (PostProcessing_image[(MT9V03X_H-1 + j)/2][i] == WHITE_PIXEL && 
-				PostProcessing_image[MT9V03X_H - 1][i] == WHITE_PIXEL && 
-				PostProcessing_image[j][i] == WHITE_PIXEL && 
-                PostProcessing_image[j - 1][i] == BLACK_PIXEL)
-            {
-				
-//				if (0.8*(MT9V03X_H - start_row) <= bottom_continuous_length)
-//				{
-					start_row = j;
-					current_length = MT9V03X_H - start_row;  // 计算白色列的长度
-					break;
-//				}
-                
-            }
+			if (PostProcessing_image[j][i] == WHITE_PIXEL)
+			{
+				bottom_continuous_length++;
+			}
+			else
+			{
+				break;
+			}
+//            if (PostProcessing_image[(MT9V03X_H-1 + j)/2][i] == WHITE_PIXEL && 
+//				PostProcessing_image[MT9V03X_H - 1][i] == WHITE_PIXEL && 
+//				PostProcessing_image[j][i] == WHITE_PIXEL && 
+//                PostProcessing_image[j - 1][i] == BLACK_PIXEL)
+//            {
+//				
+////				if (0.8*(MT9V03X_H - start_row) <= bottom_continuous_length)
+////				{
+//					start_row = j;
+//					current_length = MT9V03X_H - start_row;  // 计算白色列的长度
+//					break;
+////				}
+//                
+//            }
+        }
+		if (bottom_continuous_length < 10)  // 可根据需求调整（如至少3行才视为有效）
+        {
+            continue;
         }
         
         // 如果没有找到黑白边界，但整列都是白色 && bottom_continuous_length>0.8*MT9V03X_H
         if (j == 0 && PostProcessing_image[0][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H/2][i] == WHITE_PIXEL && PostProcessing_image[MT9V03X_H-2][i] == WHITE_PIXEL)
         {
-            start_row = 2;
-            current_length = MT9V03X_H - 2;  // 整列都是白色
+//            start_row = 2;
+//            current_length = MT9V03X_H - 2;  // 整列都是白色
+			line = 1;
+			longest_line_number = i;
+			break;
         }
         
         // 更新最长白色列信息
-        if (current_length > longest_length)
+        if (bottom_continuous_length > longest_length)
         {
-            longest_length = current_length;
+            longest_length = bottom_continuous_length;
             longest_line_number = i;
-            line = start_row;  // 记录白色区域的起始行
+            line = MT9V03X_H-bottom_continuous_length + 1;  // 记录白色区域的起始行
         }
     }
 	if (longest_line_number >= RIGHT_MAX)
@@ -329,7 +414,7 @@ void research_road(void)
 	{
 		for (j = longest_line_number; j > 1; j--)       //列
 		{
-			if ((PostProcessing_image[i][j] == WHITE_PIXEL && PostProcessing_image[i][j-1] == BLACK_PIXEL && PostProcessing_image[i][j-2] == BLACK_PIXEL) || j == 2)
+			if ((PostProcessing_image[i][j] == WHITE_PIXEL && PostProcessing_image[i][j-1] == BLACK_PIXEL && PostProcessing_image[i][j-2] == BLACK_PIXEL) || j <= 2)
 			{
 				
 				road_left[i] = j;
@@ -360,7 +445,7 @@ void research_road(void)
 		}
 		for (j = longest_line_number; j < MT9V03X_W - 2; j++)
 		{
-			if ((PostProcessing_image[i][j] == WHITE_PIXEL && PostProcessing_image[i][j+1] == BLACK_PIXEL && PostProcessing_image[i][j+2] == BLACK_PIXEL) || j == 185)
+			if ((PostProcessing_image[i][j] == WHITE_PIXEL && PostProcessing_image[i][j+1] == BLACK_PIXEL && PostProcessing_image[i][j+2] == BLACK_PIXEL) || j >= 185)
 			{
 				road_right[i] = j;
 				if (road_right[i] >= 185)
@@ -724,10 +809,11 @@ void image_process(void)
 	uint16 value_count;
 	
 	image_postprocess();
-	car_stop();
-	Zebra_crossing_handle();
+	
 	research_longest_line();
 	research_road();
+	car_stop();
+	Zebra_crossing_handle();
 	l_d_num = Find_Left_Down_Point(MT9V03X_H-1,line);
 	l_u_num = Find_Left_Up_Point(MT9V03X_H-1,line,0);
 	r_d_num = Find_Right_Down_Point(MT9V03X_H-1,line);
@@ -750,7 +836,7 @@ void image_process(void)
 	
 	if (crossing_flag_help == 0)
 	{
-		yuanhuan_in_handle();
+		yuanhuan_left_in_handle();
 	}
 	
 	
@@ -788,18 +874,19 @@ void image_process(void)
 
 	final_mid_line = find_mid_line_weight();
 	line_error = final_mid_line - MID_W;
-	if (fabs(line_error) <= 4)
-	{
-		line_error = 0.5*line_error;
-	}
-	else if (fabs(line_error) > 4 && fabs(line_error) < 10)
-	{
-		line_error = line_error;
-	}
-	else
-	{
-		line_error = line_error*1.2;
-	}
+//	speed_strategy();
+//	if (fabs(line_error) <= 4)
+//	{
+//		line_error = 0.5*line_error;
+//	}
+//	else if (fabs(line_error) > 4 && fabs(line_error) < 10)
+//	{
+//		line_error = line_error;
+//	}
+//	else
+//	{
+//		line_error = line_error*1.2;
+//	}
 //	else if (fabs(line_error) > 9)
 //	{
 //		if (line_error >0)
@@ -889,6 +976,19 @@ void huandao_clear(void)
 {
 	huandao_flag = 0;
 	huandao_num_flag = 0;
+}
+
+
+void speed_strategy(void)
+{
+	if (fabs(line_error) < 7 && line < 5)
+	{
+		speed_base = 220;
+	}
+	else
+	{
+		speed_base = 150;
+	}
 }
 
 
@@ -990,7 +1090,7 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 		
     
     }
-	else if (num_d_l == 0 && num_d_r == 0 && num_u_l >= MT9V03X_H/2+5 && num_u_r >= MT9V03X_H/2+5 && abs(num_u_l-num_u_r) <=12 && huandao_flag == 0)
+	else if (num_d_l == 0 && num_d_r == 0 && num_u_l >= MT9V03X_H/2-30 && num_u_r >= MT9V03X_H/2-30 && abs(num_u_l-num_u_r) <=12 && huandao_flag == 0)
 	{
 		if (abs(num_u_l - num_u_r) < 12)
 		{
@@ -1026,7 +1126,7 @@ uint8 my_max(uint8 num1, uint8 num2)
 	else
 		return num2;
 }
-
+uint8 num_line = 60;
 /*********************************************************
 ** 备注：权重可通过图像权重数组调节
 *********************************************************/
@@ -1036,27 +1136,57 @@ float find_mid_line_weight(void)
     float mid_line = MID_W;             // 本次中线值
     float weight_midline_sum = 0;      // 加权中线累加值
     float weight_sum = 0;              // 权重累加值
+	num_line = MT9V03X_H/2;
 //	if (low_high_choose == 0)
-//	{
-		for(uint8 i = MT9V03X_H - 1; i > line; i--)
-		{
-			weight_midline_sum += center_line[i] * mid_weight_list[i];
-			weight_sum += mid_weight_list[i];
-		}
-//	}
-//	else if (low_high_choose == 1)
 //	{
 //		for(uint8 i = MT9V03X_H - 1; i > line; i--)
 //		{
-//			weight_midline_sum += center_line[i] * low_weight_list[i];
-//			weight_sum += low_weight_list[i];
+//			weight_midline_sum += center_line[i] * mid_weight_list[i];
+//			weight_sum += mid_weight_list[i];
+//		}
+////	}
+////	else if (low_high_choose == 1)
+////	{
+////		for(uint8 i = MT9V03X_H - 1; i > line; i--)
+////		{
+////			weight_midline_sum += center_line[i] * low_weight_list[i];
+////			weight_sum += low_weight_list[i];
+////		}
+////	}
+//    
+
+
+
+
+
+
+
+//	for (uint8 i = MT9V03X_H-15; i > ((MT9V03X_H/2-10)>line?(MT9V03X_H/2-10):line); i--)
+//	{
+//		if (abs(center_line[i] - center_line[i-1]) < 11)
+//		{
+//			weight_midline_sum += center_line[i] * mid_weight_list[i];
+//			weight_sum += mid_weight_list[i];
+//		}
+//		else
+//		{
+//			num_line = i;
+//			break;
 //		}
 //	}
-    
 
-    mid_line = (float)(weight_midline_sum / weight_sum);
-    mid_line_value = last_mid_line * 0.2 + mid_line * 0.8; // 互补滤波
-    last_mid_line = mid_line_value;
+//    mid_line = (float)(weight_midline_sum / weight_sum);
+//    mid_line_value = last_mid_line * 0.2 + mid_line * 0.8; // 互补滤波
+//    last_mid_line = mid_line_value;
+////	mid_line_value = center_line[70];
+	
+	for (uint8 i = MT9V03X_H/2-5; i < MT9V03X_H/2; i++)
+	{
+		weight_midline_sum += center_line[i];
+	}
+	
+	mid_line_value = (float)(weight_midline_sum / 5);
+	
     return mid_line_value;
 }
 
@@ -1473,7 +1603,7 @@ static uint8 exit_cnt_3 = 0;
 static uint8 exit_cnt_4 = 0;
 static uint8 exit_cnt_0 = 0;
 
-void yuanhuan_in_handle(void)
+void yuanhuan_right_in_handle(void)
 {
 	float xielv,jieju;
 	uint8 u_num = 0;
@@ -1487,6 +1617,7 @@ void yuanhuan_in_handle(void)
 			exit_cnt_1++;
 			if (exit_cnt_1 >= 1)
 			{
+				speed_base = 120;;
 				huandao_flag = 1;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1499,6 +1630,7 @@ void yuanhuan_in_handle(void)
 			exit_cnt_2_1++;
 			if (exit_cnt_2_1 >= 3)
 			{
+				speed_base = 120;
 				huandao_flag = 2;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1521,6 +1653,7 @@ void yuanhuan_in_handle(void)
 			exit_cnt_2_2++;
 			if (exit_cnt_2_2 >= 1)
 			{
+				speed_base = 120;
 				huandao_flag = 2;
 				exit_cnt_2_2 = 0;
 			}
@@ -1648,3 +1781,180 @@ void yuanhuan_in_handle(void)
 }
 
 
+void yuanhuan_left_in_handle(void)
+{
+	float xielv,jieju;
+	uint8 u_num = 0;
+	
+	u_num = Find_Left_Up_Point(MT9V03X_H-1,line,1);
+	if (huandao_flag == 0 && huandao_num_flag == 0)
+	{
+		
+		if (Continuity_Change_Left(MT9V03X_H, line + 2,line) != 0 && Continuity_Change_Right(MT9V03X_H-15, line + 2,line) == 0 && l_u_num > 0 && l_d_num > 0 && line < 5 && Right_Lost_Time <= MT9V03X_H/10 && Left_Lost_Time >= MT9V03X_H/3)
+		{
+			exit_cnt_1++;
+			if (exit_cnt_1 >= 1)
+			{
+				huandao_flag = 1;
+				speed_base = 120;
+				exit_cnt_1 = 0;
+				exit_cnt_2_1 = 0;
+			}
+			
+			
+		}
+		else if (l_d_num == 0 && l_u_num != 0 && Continuity_Change_Left(MT9V03X_H, line + 10,line) != 0 && Continuity_Change_Right(MT9V03X_H-15, line + 2,line) == 0 && line < 5 && Right_Lost_Time <=MT9V03X_H/10 && Left_Lost_Time >= MT9V03X_H/3)
+		{
+			exit_cnt_2_1++;
+			if (exit_cnt_2_1 >= 3)
+			{
+				huandao_flag = 2;
+				speed_base = 120;
+				exit_cnt_1 = 0;
+				exit_cnt_2_1 = 0;
+			}
+			
+		}
+		else
+		{
+			exit_cnt_1 = 0;
+			exit_cnt_2_1 = 0;
+		}
+	}
+	else if (huandao_flag == 1)
+	{// && Continuity_Change_Left(MT9V03X_H-15, line + 10,line) == 0
+		uint8 yuanhuan_qiedian = 0;
+		
+		yuanhuan_qiedian = find_min(road_left, l_u_num+5, 10);
+		if (l_d_num == 0 && l_u_num != 0)
+		{
+			exit_cnt_2_2++;
+			if (exit_cnt_2_2 >= 1)
+			{
+				speed_base = 120;
+				huandao_flag = 2;
+				exit_cnt_2_2 = 0;
+			}
+			
+			
+		}
+		else
+		{
+			exit_cnt_2_2 = 0;
+		}
+		if (yuanhuan_qiedian)
+		{
+			xieji(yuanhuan_qiedian, l_d_num, road_left[yuanhuan_qiedian], road_left[l_d_num], road_left);
+            
+		}
+		
+	}
+	else if (huandao_flag == 2)
+	{// && detect_left_arc(road_left,road_right,MT9V03X_H-3,MT9V03X_H-38)
+		uint8 qiebuxian = 0;
+		going_flag = 0;
+		
+		qiebuxian = find_min_min(road_left, MT9V03X_H-5, u_num - 5);
+		
+		if (l_d_num == 0 && l_u_num == 0)
+		{
+			exit_cnt_3++;
+			if (exit_cnt_3 >= 1)
+			{
+				huandao_flag = 3;
+				exit_cnt_3 = 0;
+			}
+			
+		}
+		else
+		{
+			exit_cnt_3 = 0;
+		}
+		
+		if (qiebuxian > 0)
+		{
+			xieji(qiebuxian, MT9V03X_H-5,road_left[qiebuxian], 20, road_left);
+		}
+		if (u_num > 10 && l_d_num == 0 && abs(u_num - 45) <= 20)
+		{
+			xieji(u_num, MT9V03X_H-5, road_left[u_num], MT9V03X_W-20,road_right);
+			xieji(10, u_num, 2, road_left[u_num],road_right);
+			for (uint8 i = 10; i <= u_num; i++)
+			{
+				road_left[i]=3;
+			}
+//			low_high_choose = 1;
+		}
+		
+//		if (going_flag == 1 && Continuity_reduce_left(road_left))
+//		{
+//			huandao_flag = 2;
+//		}
+	}
+	else if (huandao_flag == 3)
+	{
+		
+		uint8 right_new_point = find_max(road_right, MT9V03X_H-5, 20);
+		if (Continuity_Change_Left(MT9V03X_H, line + 2,line) != 0 && Continuity_Change_Right(MT9V03X_H-10, line + 10,line) == 0 && u_num > 0)
+		{
+			exit_cnt_4++;
+			if (exit_cnt_4 >= 1)
+			{
+				huandao_flag = 4;
+				exit_cnt_4 = 0;
+			}
+			
+			
+		}
+		else
+		{
+			exit_cnt_4 = 0;
+		}
+//		uint8 right_add_point = research_black_point();
+		if (right_new_point > 0)
+		{
+			xieji(20, right_new_point, 5, road_right[right_new_point],road_right);
+			for (uint8 i = 20; i < MT9V03X_H-55; i++)
+			{
+				road_left[i] = 3;
+			}
+			going_flag = 1;
+		}
+		else if (right_new_point == 0 && going_flag == 1)
+		{
+			xieji(5, MT9V03X_H, 60, MT9V03X_W-3, road_right);
+			for (uint8 i = 5; i < MT9V03X_H-35; i++)
+			{
+				road_left[i] = 3;
+			}
+		}
+		
+	}
+	else if (huandao_flag == 4)
+	{
+		
+		left_test = Continuity_Change_Left(MT9V03X_H-7, line+25, line);
+		right_test = Continuity_Change_Right(MT9V03X_H-7, line+25, line);
+		if (left_test == 0 && right_test == 0 && l_d_num == 0 && r_d_num == 0)
+		{
+			exit_cnt_0++;
+			if (exit_cnt_0 >=1)
+			{
+				huandao_flag = 0;
+				speed_base = 180;
+				huandao_num_flag = 10;
+				exit_cnt_0 = 0;
+			}
+			
+		}
+		else
+		{
+			exit_cnt_0 = 0;
+		}
+		if (huandao_flag != 0)
+		{
+			xieji(70, MT9V03X_H-5, 60, 45,road_left);// || u_num > 140
+		}
+		
+	}
+}

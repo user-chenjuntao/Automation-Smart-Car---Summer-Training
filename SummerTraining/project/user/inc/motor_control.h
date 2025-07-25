@@ -9,6 +9,7 @@
 #include "image_my.h"
 #include "zf_device_key.h"
 #include "menu.h"
+#include "servo_pid.h"
 
 
 #define MAX_DUTY            (70 )                                               // 最大 MAX_DUTY% 占空比

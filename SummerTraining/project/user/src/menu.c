@@ -84,8 +84,8 @@ menu_item Pa_Servo_Menu = {
 //-----------------------------------------
 menu_item Pa_Pid_Menu = {
 	.name = "PaPid",
-	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out","Alpha"},
-	.number = 6,
+	.content = {"SKp","SKi","SKd","SMax_Iout","SMax_out","Alpha","SKp_value","Kp_base"},
+	.number = 8,
 };
 //-----------------------------------------
 //三级菜单——速度状态
@@ -292,6 +292,8 @@ void menu_display(void)
 			ips200_show_uint(180,128,Left_Lost_Time,3);
 			ips200_show_string(0,144,"LOST_RIGHT");
 			ips200_show_uint(180,144,Right_Lost_Time,3);
+			ips200_show_string(0,160,"SKp");
+			ips200_show_float(184, 160, Speedpid.fKp, 3, 2);
 //			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
@@ -317,6 +319,8 @@ void menu_display(void)
 			ips200_show_float(184, 64, Speedpid.fMax_Iout, 3, 2);
 			ips200_show_float(184, 80, Speedpid.fMax_Out, 3, 2);
 			ips200_show_float(184, 96, Speedpid.alpha, 1, 1);
+			ips200_show_float(150, 112, Kp_value, 1, 5);
+			ips200_show_float(150, 128, Kp_base, 1, 3);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -355,6 +359,7 @@ void menu_display(void)
 			ips200_show_string(0, 240, "angle");
 			ips200_show_string(0, 256, "encoder_1");
 			ips200_show_string(0, 272, "encoder_2");
+			ips200_show_uint(100, 240, num_line, 3);
 		    ips200_show_uint(200, 240, servo_pwm_value, 4);
 			ips200_show_int(200, 256, encoder_data_1, 4);
 			ips200_show_int(200, 272, encoder_data_2, 4);
@@ -363,7 +368,7 @@ void menu_display(void)
 			break;
 			
 	}
-	if (cursor == 11 || (cursor > 200 && cursor < 220))
+	if (cursor == 11)
 	{
 		car_go_flag = 1;
 	}
@@ -429,7 +434,7 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base += (int)level[level_i]*3;
+					speed_base += (int)level[level_i];
 					break;
 				case 212:
 					speed_k += level[level_i];
@@ -464,6 +469,12 @@ void menu_switch(void)
 				case 236:
 					Speedpid.alpha += level[level_i];
 					break;
+				case 237:
+					Kp_value += level[level_i];
+					break;
+				case 238:
+					Kp_base += level[level_i];
+					break;
 				default:
 					break;
 			}
@@ -474,7 +485,7 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base -= (int)level[level_i]*3;
+					speed_base -= (int)level[level_i];
 					break;
 				case 212:
 					speed_k -= level[level_i];
@@ -508,6 +519,12 @@ void menu_switch(void)
 					break;
 				case 236:
 					Speedpid.alpha -= level[level_i];
+					break;
+				case 237:
+					Kp_value -= level[level_i];
+					break;
+				case 238:
+					Kp_base -= level[level_i];
 					break;
 				default:
 					break;

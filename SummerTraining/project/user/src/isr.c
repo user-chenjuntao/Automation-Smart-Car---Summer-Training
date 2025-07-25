@@ -111,6 +111,7 @@ void TIM6_IRQHandler (void)
 	
 //	extern void pit_gyro_handler (void);
 	extern void pit_key_handler (void);
+//	extern void pit_gyro_handler (void);
     // 此处编写用户代码
 	  
 //	pit_gyro_handler();
@@ -128,6 +129,7 @@ void TIM7_IRQHandler (void)
 	extern void pit_encoder_handler (void);
 	extern void pit_servo_handler (void);
 	extern void pit_motor_handler (void);
+	
     // 此处编写用户代码
 	pit_encoder_handler();  // 10ms：读取编码器
 	
@@ -136,6 +138,7 @@ void TIM7_IRQHandler (void)
     pit_tim7_cnt++;
     if(pit_tim7_cnt >= 2)   // 20ms：执行舵机控制
     {
+		
         pit_servo_handler();
         pit_tim7_cnt = 0;
     }

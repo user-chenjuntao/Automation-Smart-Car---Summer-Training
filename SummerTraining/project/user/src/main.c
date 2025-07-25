@@ -58,9 +58,10 @@ int encoder_data_1 = 0;
 int encoder_data_2 = 0;
 int v1= 0;
 int v2= 0;
-int speed_base = 0;//122
-float speed_k = 0;//0.5
-int speed_limit = 5000;//40
+int speed_base = 200;//122
+float speed_k = 0.4;//0.5
+int speed_limit = 30;//40
+//uint8 stop_delay = 0;
 
 //uint8 image_threshold = 0;
 //extern uint8 reference_point;
@@ -131,13 +132,13 @@ int main(void)
 //        if(imu963ra_init())
 //        {
 //            printf("\r\nIMU963RA init error.");                                 // IMU963RA 初始化失败
-//			ips200_show_string(0, 32, "IMU963RA reinit.");
 //        }
 //        else
 //        {
 //            break;
 //        }
 //    }
+//	imu963ra_init();
     ips200_show_string(0, 16, "init success.");
 //	ips200_show_string(0, 32, "init success.");
 	system_delay_ms(1000);  
@@ -179,7 +180,10 @@ int main(void)
 		//
 		
 		image_data_clear();
-		printf("%d,%d,%d,%d\n",encoder_data_1,encoder_data_2,speed_base,speed_base);
+		
+//		printf("\r\nIMU963RA gyro data:  x=%5d, y=%5d, z=%5d\r\n", imu963ra_gyro_x, imu963ra_gyro_y, imu963ra_gyro_z);
+//		printf("ABC");
+//		printf("%d,%d,%d,%d\n",encoder_data_1,encoder_data_2,speed_base,speed_base);
 //		system_delay_ms(5);
 		
         // 此处编写需要循环执行的代码
@@ -232,7 +236,7 @@ void pit_servo_handler (void)
 {
 	if (car_go_flag)
 	{
-//		Servo_control();
+		Servo_control();
 	}
 	else
 	{
@@ -247,21 +251,28 @@ void pit_motor_handler (void)
 	if (car_go_flag)
 	{
 
-		if (car_stop_flag == 1 || Zebra_stop_flag == 1)
+		if (car_stop_flag == 1)
 		{
 			car_go_flag = 0;
-			cursor = 1;
+			cursor = 2;
+		}
+		else if (Zebra_stop_flag == 1)
+		{
+			car_go_flag = 0;
+			cursor = 2;
+//			stop_delay = 1;
 		}
 		else
 		{
 //			
 			final_motor_control(speed_base, speed_k, speed_limit);
-			
+//			stop_delay = 0;
 				
 		}
 	}
 	else
 	{
+//		stop_delay = 0;
 		Motor_stop();
 	}
 	
@@ -269,7 +280,8 @@ void pit_motor_handler (void)
 	
 }
 
-void pit_gyro_handler (void)
-{
-//    imu963ra_get_gyro();                                                        // 获取 IMU963RA 的角速度测量数值
-}
+//void pit_gyro_handler (void)
+//{
+////    imu963ra_get_gyro();                                                        // 获取 IMU963RA 的角速度测量数值
+////	dynamic_pid_value_set();
+//}
