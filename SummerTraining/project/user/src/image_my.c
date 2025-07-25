@@ -874,7 +874,7 @@ void image_process(void)
 
 	final_mid_line = find_mid_line_weight();
 	line_error = final_mid_line - MID_W;
-//	speed_strategy();
+	speed_strategy();
 //	if (fabs(line_error) <= 4)
 //	{
 //		line_error = 0.5*line_error;
@@ -987,7 +987,7 @@ void speed_strategy(void)
 	}
 	else
 	{
-		speed_base = 150;
+		speed_base = 160;
 	}
 }
 
@@ -1464,6 +1464,36 @@ int find_min_min(uint8 arr[], int start, int end) {
     return circle_num;
 }
 
+int find_max_max(uint8 arr[], int start, int end) {
+	//从下往上找点
+	int circle_num = 0;
+	
+    if (start < end || start < 0 || end < 0) {
+        return -1; // 错误处理
+    }
+	if (start >= MT9V03X_H - 8)
+	{
+		start = MT9V03X_H - 8;
+	}
+
+    for (int i = start - 1; i >= end; i--) {
+        if (arr[i] >= arr[i-1] && 
+			arr[i-1] >= arr[i-2] && 
+			arr[i-2] >= arr[i-3] &&
+			arr[i-3] >= arr[i-4] &&
+			arr[i] >= arr[i+1] &&
+			arr[i+1] >= arr[i+2] &&
+			arr[i+2] >= arr[i+3] &&
+			arr[i+3] >= arr[i+4 ]&&
+			arr[i] > MT9V03X_W-6) 
+		{
+            circle_num = i;
+			return circle_num;
+        }
+    }
+    return circle_num;
+}
+
 uint8 find_max_limit(uint8 num1,uint8 num2)
 {
 	if (num1 > num2)
@@ -1617,7 +1647,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_1++;
 			if (exit_cnt_1 >= 1)
 			{
-				speed_base = 120;;
+				speed_base = 130;;
 				huandao_flag = 1;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1630,7 +1660,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_2_1++;
 			if (exit_cnt_2_1 >= 3)
 			{
-				speed_base = 120;
+				speed_base = 130;
 				huandao_flag = 2;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1653,7 +1683,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_2_2++;
 			if (exit_cnt_2_2 >= 1)
 			{
-				speed_base = 120;
+				speed_base = 130;
 				huandao_flag = 2;
 				exit_cnt_2_2 = 0;
 			}
@@ -1796,7 +1826,7 @@ void yuanhuan_left_in_handle(void)
 			if (exit_cnt_1 >= 1)
 			{
 				huandao_flag = 1;
-				speed_base = 120;
+				speed_base = 130;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
 			}
@@ -1809,7 +1839,7 @@ void yuanhuan_left_in_handle(void)
 			if (exit_cnt_2_1 >= 3)
 			{
 				huandao_flag = 2;
-				speed_base = 120;
+				speed_base = 130;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
 			}
@@ -1825,13 +1855,13 @@ void yuanhuan_left_in_handle(void)
 	{// && Continuity_Change_Left(MT9V03X_H-15, line + 10,line) == 0
 		uint8 yuanhuan_qiedian = 0;
 		
-		yuanhuan_qiedian = find_min(road_left, l_u_num+5, 10);
+		yuanhuan_qiedian = find_max(road_left, l_u_num+5, 10);
 		if (l_d_num == 0 && l_u_num != 0)
 		{
 			exit_cnt_2_2++;
 			if (exit_cnt_2_2 >= 1)
 			{
-				speed_base = 120;
+				speed_base = 130;
 				huandao_flag = 2;
 				exit_cnt_2_2 = 0;
 			}
@@ -1854,7 +1884,7 @@ void yuanhuan_left_in_handle(void)
 		uint8 qiebuxian = 0;
 		going_flag = 0;
 		
-		qiebuxian = find_min_min(road_left, MT9V03X_H-5, u_num - 5);
+		qiebuxian = find_max_max(road_left, MT9V03X_H-5, u_num - 5);
 		
 		if (l_d_num == 0 && l_u_num == 0)
 		{
@@ -1894,7 +1924,7 @@ void yuanhuan_left_in_handle(void)
 	else if (huandao_flag == 3)
 	{
 		
-		uint8 right_new_point = find_max(road_right, MT9V03X_H-5, 20);
+		uint8 right_new_point = find_min(road_right, MT9V03X_H-5, 20);
 		if (Continuity_Change_Left(MT9V03X_H, line + 2,line) != 0 && Continuity_Change_Right(MT9V03X_H-10, line + 10,line) == 0 && u_num > 0)
 		{
 			exit_cnt_4++;
@@ -1922,7 +1952,7 @@ void yuanhuan_left_in_handle(void)
 		}
 		else if (right_new_point == 0 && going_flag == 1)
 		{
-			xieji(5, MT9V03X_H, 60, MT9V03X_W-3, road_right);
+			xieji(25, MT9V03X_H-5, 40, MT9V03X_W-3, road_right);
 			for (uint8 i = 5; i < MT9V03X_H-35; i++)
 			{
 				road_left[i] = 3;
