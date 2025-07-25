@@ -6,9 +6,9 @@ tagPID_T SRpid;
 
 PIDInitStruct SpeedPidInitStruct = 
 {
-	.fKp       = 1.30,     //.fKp     1.41       1.61
+	.fKp       = 1.30,     //.fKp     1.30     1.16
 	.fKi       = 0,     //.fKi
-	.fKd       = 23.0,     //.fKd        8         3.0
+	.fKd       = 23.0,     //.fKd    23.0     13.80
 	.fMax_Iout = 100,      //.fMax_Iout
 	.fMax_Out  = 150,       //.fMax_Out
 	.alpha     = 0.8

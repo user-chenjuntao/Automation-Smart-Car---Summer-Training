@@ -41,6 +41,10 @@ extern uint8 huandao_flag;
 extern uint8 huandao_num_flag;
 extern uint8 crossing_flag_help;
 extern uint8 num_line;
+extern int straight_speed;
+extern int turn_speed;
+extern int yuanhuan_speed;
+extern int left_right_choose;
 
 //uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);

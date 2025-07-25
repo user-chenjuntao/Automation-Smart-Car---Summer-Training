@@ -68,8 +68,8 @@ menu_item ImageMenu = {
 //-----------------------------------------
 menu_item Pa_Speed_Menu = {
 	.name = "PaSpeed",
-	.content = {"speed_base","speed_k","speed_limit"},
-	.number = 3,
+	.content = {"straight_speed","turn_speed","speed_k","speed_limit","yuanhuan_speed","choose"},
+	.number = 6,
 };
 //-----------------------------------------
 //三级菜单——速度调整
@@ -297,9 +297,12 @@ void menu_display(void)
 //			ips200_show_string(0, 300, "E5:OUT/E4:IN/E3:DOWN/E2:UP");
 			break;
 		case PRAMETERSPEED:
-			ips200_show_int(180, 16, speed_base, 4);
-			ips200_show_float(180, 32, speed_k, 2,2);
-			ips200_show_int(180, 48, speed_limit, 4);
+			ips200_show_int(180, 16, straight_speed, 4);
+			ips200_show_int(180, 32, turn_speed, 4);
+			ips200_show_float(180, 48, speed_k, 2,2);
+			ips200_show_int(180, 64, speed_limit, 4);
+			ips200_show_int(180, 80, yuanhuan_speed, 4);
+			ips200_show_int(180, 96, left_right_choose, 2);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -434,13 +437,19 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base += (int)level[level_i];
+					straight_speed += (int)level[level_i];
 					break;
 				case 212:
-					speed_k += level[level_i];
+					turn_speed += (int)level[level_i];
 					break;
 				case 213:
+					speed_k += level[level_i];
+					break;
+				case 214:
 					speed_limit += (int)level[level_i];
+					break;
+				case 215:
+					yuanhuan_speed += (int)level[level_i];
 					break;
 				case 221:
 					servo_pwm_value += (uint32)level[level_i];
@@ -485,13 +494,19 @@ void menu_switch(void)
 			switch (cursor)
 			{
 				case 211:
-					speed_base -= (int)level[level_i];
+					straight_speed -= (int)level[level_i];
 					break;
 				case 212:
-					speed_k -= level[level_i];
+					turn_speed -= (int)level[level_i];
 					break;
 				case 213:
+					speed_k -= level[level_i];
+					break;
+				case 214:
 					speed_limit -= (int)level[level_i];
+					break;
+				case 215:
+					yuanhuan_speed -= (int)level[level_i];
 					break;
 				case 221:
 					servo_pwm_value -= (uint32)level[level_i];
