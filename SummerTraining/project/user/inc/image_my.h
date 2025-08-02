@@ -18,11 +18,11 @@
 #define THRESHOLD_MIN              255*2
 //#define BORDERLEFT                 1
 //#define BORDERRIGHT                254
-#define MID_W                      87
+#define MID_W                      93
 // 定义邻近拐点的阈值（行数差≤此值则合并，可根据实际调整）
 #define BREAKPOINT_MERGE_THRESHOLD 6
 #define LEFT_MAX                   4
-#define RIGHT_MAX                  116
+#define RIGHT_MAX                  183
 
 extern uint8 car_stop_flag;
 extern float final_mid_line;
@@ -45,6 +45,7 @@ extern int straight_speed;
 extern int turn_speed;
 extern int yuanhuan_speed;
 extern int left_right_choose;
+extern uint8 qianzhan_value;
 
 //uint8 otsuThreshold_less(uint8 *image, uint16 col, uint16 row);
 void image_postprocess(void);

@@ -25,14 +25,14 @@
 
 #define SERVO_MOTOR_L_MAX           (75 )                                       // 定义主板上舵机活动范围 角度
 #define SERVO_MOTOR_R_MAX           (105)                                       // 定义主板上舵机活动范围 角度
-#define SERVO_MOTOR_INIT            (598)
-#define SERVO_MOTOR_LEFT_LIMIT      (515)
-#define SERVO_MOTOR_RIGHT_LIMIT     (685)
+#define SERVO_MOTOR_INIT            (604)                                       // 708
+#define SERVO_MOTOR_LEFT_LIMIT      (534)
+#define SERVO_MOTOR_RIGHT_LIMIT     (674)
 
 //#define LEFT_PWM                    20
 //#define RIGHT_PWM                   20
-#define LIMIT_PWM_MIN              -7000
-#define LIMIT_PWM_MAX               7000
+#define LIMIT_PWM_MIN              -6000
+#define LIMIT_PWM_MAX               6000
 
 
 

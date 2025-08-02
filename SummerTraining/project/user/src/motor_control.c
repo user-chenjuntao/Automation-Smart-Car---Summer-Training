@@ -28,13 +28,15 @@ void servo_init(void)
 void motor_pwm(int duty_L, int duty_R)
 {
 	
-//	if (duty >= 50)
+//	if (duty_L >= 7000 || duty_R >= 7000)
 //	{
-//		duty = 50;
+//		duty_L = 0;
+//		duty_R = 0;
 //	}
-//	else if (duty <= -50)
+//	else if (duty_L <= -7000 || duty_R <= -7000)
 //	{
-//		duty = -50;
+//		duty_L = 0;
+//		duty_R = 0;
 //	}
 	if(0 <= duty_L)                                                           // Õý×ª
     {

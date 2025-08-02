@@ -15,6 +15,7 @@ extern uint8 break_num_right;
 extern int speed_base;
 extern float speed_k;
 extern int speed_limit;
+extern int servo_test;
 //uint32 pid[5]={}
 
 //-----------------------------------------
@@ -68,16 +69,16 @@ menu_item ImageMenu = {
 //-----------------------------------------
 menu_item Pa_Speed_Menu = {
 	.name = "PaSpeed",
-	.content = {"straight_speed","turn_speed","speed_k","speed_limit","yuanhuan_speed","choose"},
-	.number = 6,
+	.content = {"straight_speed","turn_speed","speed_k","speed_limit","yuanhuan_speed","choose","qianzhan","speed_base"},
+	.number = 8,
 };
 //-----------------------------------------
 //三级菜单——速度调整
 //-----------------------------------------
 menu_item Pa_Servo_Menu = {
 	.name = "PaServo",
-	.content = {"InitPwm","LeftLimit","RightLimit"},
-	.number = 3,
+	.content = {"InitPwm","LeftLimit","RightLimit","servo_test"},
+	.number = 4,
 };
 //-----------------------------------------
 //三级菜单——PID调整
@@ -303,6 +304,8 @@ void menu_display(void)
 			ips200_show_int(180, 64, speed_limit, 4);
 			ips200_show_int(180, 80, yuanhuan_speed, 4);
 			ips200_show_int(180, 96, left_right_choose, 2);
+			ips200_show_int(180, 112, qianzhan_value, 3);
+			ips200_show_int(180, 128, speed_base, 4);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -311,6 +314,7 @@ void menu_display(void)
 			ips200_show_uint(184, 16, servo_pwm_value, 3);
 			ips200_show_uint(200, 32, left_limit, 4);
 			ips200_show_uint(200, 48, right_limit, 4);
+			ips200_show_uint(200, 64, servo_test, 4);
 			ips200_show_string(0, 208, "level");
 			ips200_show_float(184, 208, level[level_i], 3, 2);
 			ips200_show_string(0, 300, "E5:LEVEL|E4:-|E3:+|E2:UP/OUT");
@@ -387,7 +391,6 @@ void menu_display(void)
 
 void menu_switch(void)
 {
-
 	if (cursor < 100)
 	{
 		if (key_get_state(KEY_1) == 1)
@@ -451,6 +454,15 @@ void menu_switch(void)
 				case 215:
 					yuanhuan_speed += (int)level[level_i];
 					break;
+				case 216:
+					left_right_choose += (int)level[level_i];
+					break;
+				case 217:
+					qianzhan_value += (int)level[level_i];
+					break;
+				case 218:
+					speed_base += (int)level[level_i]*3;
+					break;
 				case 221:
 					servo_pwm_value += (uint32)level[level_i];
 					break;
@@ -459,6 +471,9 @@ void menu_switch(void)
 					break;
 				case 223:
 					right_limit += (uint32)level[level_i];
+					break;
+				case 224:
+					servo_test += (uint32)level[level_i];
 					break;
 				case 231:
 					Speedpid.fKp += level[level_i];
@@ -508,6 +523,15 @@ void menu_switch(void)
 				case 215:
 					yuanhuan_speed -= (int)level[level_i];
 					break;
+				case 216:
+					left_right_choose -= (int)level[level_i];
+					break;
+				case 217:
+					qianzhan_value -= (int)level[level_i];
+					break;
+				case 218:
+					speed_base -= (int)level[level_i]*3;
+					break;
 				case 221:
 					servo_pwm_value -= (uint32)level[level_i];
 					break;
@@ -516,6 +540,9 @@ void menu_switch(void)
 					break;
 				case 223:
 					right_limit -= (uint32)level[level_i];
+					break;
+				case 224:
+					servo_test -= (uint32)level[level_i];
 					break;
 				case 231:
 					Speedpid.fKp -=level[level_i];

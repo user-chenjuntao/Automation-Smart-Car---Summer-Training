@@ -9,10 +9,11 @@ float line_error = 0;
 uint8 low_high_choose = 0;
 uint8 huandao_num_flag = 0;
 uint8 crossing_flag_help = 0;
-int straight_speed = 200;//200   240
-int turn_speed = 160;//160       185
+int straight_speed = 270;//200   240
+int turn_speed = 245;//160       185
 int yuanhuan_speed = 130;//125
 int left_right_choose = 0;
+uint8 qianzhan_value = 52;
 
 extern int speed_base;
 
@@ -525,38 +526,71 @@ void merge_close_breakpoints(void)
   Sample     left_down_guai[0]=Find_Left_Down_Point(MT9V03X_H-1,20);
   @note      角点检测阈值可根据实际值更改
 -------------------------------------------------------------------------------------------------------------------*/
-int Find_Left_Down_Point(int start,int end)//找左下角点，返回值是角点所在的行数
+int Find_Left_Down_Point(int start,int end, uint8 mode)//找左下角点，返回值是角点所在的行数
 {
     int i,t;
     int left_down_line=0;
     if(Left_Lost_Time>=0.8*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
        return left_down_line;
-    if(start<end)//--访问，要保证start>end
-    {
-        t=start;
-        start=end;
-        end=t;
-    }
-    if(start>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
-        start=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
-    if(end<=line)
-        end=line;
-    if(end<=5)
-       end=5;
-    for(i=start;i>=end;i--)
-    {
-        if(left_down_line==0&&//只找第一个符合条件的点
-           abs(road_left[i]-road_left[i+1])<=5&&//角点的阈值可以更改
-           abs(road_left[i+1]-road_left[i+2])<=5&&  
-           abs(road_left[i+2]-road_left[i+3])<=5&&
-              (road_left[i]-road_left[i-2])>=5&&
-              (road_left[i]-road_left[i-3])>=10&&
-              (road_left[i]-road_left[i-4])>=10)
-        {
-            left_down_line=i;//获取行数即可
-            break;
-        }
-    }
+	if (mode == 0)
+	{
+		if(start<end)//--访问，要保证start>end
+		{
+			t=start;
+			start=end;
+			end=t;
+		}
+		if(start>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
+			start=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
+		if(end<=line)
+			end=line;
+		if(end<=5)
+		   end=5;
+		for(i=start;i>=end;i--)
+		{
+			if(left_down_line==0&&//只找第一个符合条件的点
+			   abs(road_left[i]-road_left[i+1])<=5&&//角点的阈值可以更改
+			   abs(road_left[i+1]-road_left[i+2])<=5&&  
+			   abs(road_left[i+2]-road_left[i+3])<=5&&
+				  (road_left[i]-road_left[i-2])>=8&&
+				  (road_left[i]-road_left[i-3])>=10&&
+				  (road_left[i]-road_left[i-4])>=12)
+			{
+				left_down_line=i;//获取行数即可
+				break;
+			}
+		}
+	}
+	else if (mode == 1)
+	{
+		if(start>end)//--访问，要保证start<end
+		{
+			t=start;
+			start=end;
+			end=t;
+		}
+		if(end>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
+			end=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
+		if(start<=line)
+			start=line;
+		if(start<=5)
+		   start=5;
+		for(i=start;i<=end;i++)
+		{
+			if(left_down_line==0&&//只找第一个符合条件的点
+			   abs(road_left[i]-road_left[i+1])<=5&&//角点的阈值可以更改
+			   abs(road_left[i+1]-road_left[i+2])<=5&&  
+			   abs(road_left[i+2]-road_left[i+3])<=5&&
+				  (road_left[i]-road_left[i-2])>=8&&
+				  (road_left[i]-road_left[i-3])>=10&&
+				  (road_left[i]-road_left[i-4])>=12)
+			{
+				left_down_line=i;//获取行数即可
+				break;
+			}
+		}
+	}
+    
     return left_down_line;
 }
 
@@ -573,7 +607,7 @@ int Find_Left_Up_Point(int start,int end,uint8 mode)//找左下角点，返回值是角点所
     int left_up_line=0;
     if(Left_Lost_Time>=0.8*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
        return left_up_line;
-	if (mode == 0)
+	if (mode == 0)  //0从下往上找
 	{
 		if(start<end)//--访问，要保证start>end
 		{
@@ -603,7 +637,7 @@ int Find_Left_Up_Point(int start,int end,uint8 mode)//找左下角点，返回值是角点所
 		}
 		
 	}
-	else if (mode == 1)
+	else if (mode == 1)  //1从上往下找
 	{
 		if(start>end)//--访问，要保证start>end
 		{
@@ -643,38 +677,71 @@ int Find_Left_Up_Point(int start,int end,uint8 mode)//找左下角点，返回值是角点所
   Sample     left_down_guai[0]=Find_Left_Down_Point(MT9V03X_H-1,20);
   @note      角点检测阈值可根据实际值更改
 -------------------------------------------------------------------------------------------------------------------*/
-int Find_Right_Down_Point(int start,int end)//找左下角点，返回值是角点所在的行数
+int Find_Right_Down_Point(int start,int end, uint8 mode)//找左下角点，返回值是角点所在的行数
 {
     int i,t;
     int right_down_line=0;
     if(Right_Lost_Time>=0.8*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
        return right_down_line;
-    if(start<end)//--访问，要保证start>end
-    {
-        t=start;
-        start=end;
-        end=t;
-    }
-    if(start>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
-        start=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
-    if(end<=line)
-        end=line;
-    if(end<=5)
-       end=5;
-    for(i=start;i>=end;i--)
-    {
-        if(right_down_line==0&&//只找第一个符合条件的点
-           abs(road_right[i]-road_right[i+1])<=5&&//角点的阈值可以更改
-           abs(road_right[i+1]-road_right[i+2])<=5&&  
-           abs(road_right[i+2]-road_right[i+3])<=5&&
-              (road_right[i-2]-road_right[i])>=5&&
-              (road_right[i-3]-road_right[i])>=10&&
-              (road_right[i-4]-road_right[i])>=10)
-        {
-            right_down_line=i;//获取行数即可
-            break;
-        }
-    }
+	if (mode == 0)
+	{
+		if(start<end)//--访问，要保证start>end
+		{
+			t=start;
+			start=end;
+			end=t;
+		}
+		if(start>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
+			start=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
+		if(end<=line)
+			end=line;
+		if(end<=5)
+		   end=5;
+		for(i=start;i>=end;i--)
+		{
+			if(right_down_line==0&&//只找第一个符合条件的点
+			   abs(road_right[i]-road_right[i+1])<=5&&//角点的阈值可以更改
+			   abs(road_right[i+1]-road_right[i+2])<=5&&  
+			   abs(road_right[i+2]-road_right[i+3])<=5&&
+				  (road_right[i-2]-road_right[i])>=8&&
+				  (road_right[i-3]-road_right[i])>=10&&
+				  (road_right[i-4]-road_right[i])>=12)
+			{
+				right_down_line=i;//获取行数即可
+				break;
+			}
+		}
+	}
+	else if (mode == 1)
+	{
+		if(start>end)//--访问，要保证start<end
+		{
+			t=start;
+			start=end;
+			end=t;
+		}
+		if(end>=MT9V03X_H-1-5)//下面5行上面5行数据不稳定，不能作为边界点来判断，舍弃
+			end=MT9V03X_H-1-5;//另一方面，当判断第i行时，会访问到i+3和i-4行，防止越界
+		if(start<=line)
+			start=line;
+		if(start<=5)
+		   start=5;
+		for(i=start;i<=end;i++)
+		{
+			if(right_down_line==0&&//只找第一个符合条件的点
+			   abs(road_right[i]-road_right[i+1])<=5&&//角点的阈值可以更改
+			   abs(road_right[i+1]-road_right[i+2])<=5&&  
+			   abs(road_right[i+2]-road_right[i+3])<=5&&
+				  (road_right[i-2]-road_right[i])>=8&&
+				  (road_right[i-3]-road_right[i])>=10&&
+				  (road_right[i-4]-road_right[i])>=12)
+			{
+				right_down_line=i;//获取行数即可
+				break;
+			}
+		}
+	}
+    
     return right_down_line;
 }
 
@@ -774,10 +841,10 @@ void image_process(void)
 	research_longest_line();
 	research_road();
 	car_stop();
-//	Zebra_crossing_handle();
-	l_d_num = Find_Left_Down_Point(MT9V03X_H-1,line);
+	Zebra_crossing_handle();
+	l_d_num = Find_Left_Down_Point(MT9V03X_H-1,line,0);
 	l_u_num = Find_Left_Up_Point(MT9V03X_H-1,line,0);
-	r_d_num = Find_Right_Down_Point(MT9V03X_H-1,line);
+	r_d_num = Find_Right_Down_Point(MT9V03X_H-1,line,0);
 	r_u_num = Find_Right_Up_Point(MT9V03X_H-1,line,0);
 	if (l_d_num > 0 && l_d_num < l_u_num)
 	{
@@ -809,80 +876,24 @@ void image_process(void)
 	}
 	
 	
-	
-	
-	
-	
-//	ips200_show_gray_image(0, 50, PostProcessing_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-//	for (uint8 i = 0; i < MT9V03X_H; i++)
-//	{
-//		ips200_draw_point(longest_line_number, i+50,RGB565_YELLOW);
-//	}
+
 	for (uint8 i = line; i < MT9V03X_H; i++)
 	{
 		center_line[i] = (road_left[i] + road_right[i]) >> 1;//求中线
 	}
-//	for (uint8 i = line; i < MT9V03X_H; i++)
-//	{
-//		ips200_draw_point(road_left[i], i+50,RGB565_GREEN);
-//		ips200_draw_point(road_right[i], i+50,RGB565_BLUE);
-//		center_line[i] = (road_left[i] + road_right[i]) >> 1;//求中线
-//		ips200_draw_point(center_line[i], i+50,RGB565_RED);
-//	}
-
-//	ips200_draw_point(road_left[l_d_num],l_d_num+50,RGB565_RED);
-//	ips200_draw_point(road_left[l_u_num],l_u_num+50,RGB565_RED);
-//	ips200_draw_point(road_right[r_d_num],r_d_num+50,RGB565_RED);
-//	ips200_draw_point(road_right[r_u_num],r_u_num+50,RGB565_RED);
-
-//	ips200_show_uint(0,208,l_d_num,3);
-//	ips200_show_uint(30,208,l_u_num,3);
-//	ips200_show_uint(60,208,r_d_num,3);
-//	ips200_show_uint(90,208,r_u_num,3);
 
 
-	final_mid_line = find_mid_line_weight();
-	line_error = final_mid_line - MID_W;
+	if (Zebra_stop_flag == 0)
+	{
+		final_mid_line = find_mid_line_weight();
+		line_error = final_mid_line - MID_W;
+	}
+	else  if (Zebra_stop_flag == 1)
+	{
+		line_error = 0;
+	}
 	speed_strategy();
-//	if (fabs(line_error) <= 4)
-//	{
-//		line_error = 0.5*line_error;
-//	}
-//	else if (fabs(line_error) > 4 && fabs(line_error) < 10)
-//	{
-//		line_error = line_error;
-//	}
-//	else
-//	{
-//		line_error = line_error*1.2;
-//	}
-//	else if (fabs(line_error) > 9)
-//	{
-//		if (line_error >0)
-//		{
-//			line_error = line_error*line_error/10;
-//		}
-//		else
-//		{
-//			line_error = -line_error*line_error/10;
-//		}
-//	}
-//	ips200_show_uint(120,208,final_mid_line,3);
 
-	
-
-
-
-//	break_num_left = 0;
-//	break_num_right = 0;
-//	Left_Lost_Time = 0;
-//	Right_Lost_Time = 0;
-
-//	
-//	memset(road_left, 0, sizeof(road_left));
-//	memset(road_right, 0, sizeof(road_right));
-//	
-//	memset(center_line, 0, sizeof(center_line));
 
 		
 }
@@ -893,10 +904,17 @@ uint8 right_test = 0;
 void image_show(void)
 {
 	ips200_show_gray_image(0, 50, PostProcessing_image[0], MT9V03X_W, MT9V03X_H, MT9V03X_W, MT9V03X_H, 0);
-	for (uint8 i = 0; i < MT9V03X_H; i++)
-	{
-		ips200_draw_point(longest_line_number, i+50,RGB565_YELLOW);
-	}
+//	for (uint8 i = 0; i < MT9V03X_H; i++)
+//	{
+//		ips200_draw_point(longest_line_number, i+50,RGB565_YELLOW);
+//	}
+//	for (uint8 i = 0;i < MT9V03X_W; i++)
+//	{
+//		
+//	}
+	ips200_draw_line(longest_line_number, 50, longest_line_number, 50+MT9V03X_H, RGB565_YELLOW);
+	ips200_draw_line(0, 50+line, MT9V03X_W, 50+line, RGB565_RED);
+	ips200_draw_line(0, 50+qianzhan_value, MT9V03X_W, 50+qianzhan_value, RGB565_PINK);
 	for (uint8 i = line; i < MT9V03X_H; i++)
 	{
 		ips200_draw_point(road_left[i], i+50,RGB565_GREEN);
@@ -1030,11 +1048,11 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
     
 	
 	
-    // 处理左边界补线
-    if (num_d_l&& num_u_l&&num_d_r&&num_u_r && huandao_flag == 0)
-    {
+    // 正入十字
+    if (num_d_l&& num_u_l&&num_d_r&&num_u_r && huandao_flag == 0 && Zebra_stop_flag == 0)
+    {//abs(num_u_l-num_u_r) <=10 && abs(num_d_l-num_d_r) <=10 && 
 
-        if (abs(num_u_l-num_u_r) <=10 && abs(num_d_l-num_d_r) <=10 && abs(num_d_l-num_u_l) >= 15 && abs(num_d_r - num_u_r) >= 15 && Continuity_Change_Left(MT9V03X_H-5, line + 10,line) != 0 && Continuity_Change_Right(MT9V03X_H-5, line + 10,line) != 0)// num_l >= 2
+        if (abs(num_d_l-num_u_l) >= 15 && abs(num_d_r - num_u_r) >= 15 && Continuity_Change_Left(MT9V03X_H-5, line + 10,line) != 0 && Continuity_Change_Right(MT9V03X_H-5, line + 10,line) != 0)// num_l >= 2
         {
             // 使用最后两个断点进行线性插值
             xieji(num_u_l, num_d_l, road_left[num_u_l], road_left[num_d_l],road_left);
@@ -1049,9 +1067,38 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 		
     
     }
-	else if (num_d_l == 0 && num_d_r == 0 && num_u_l >= MT9V03X_H/2-30 && num_u_r >= MT9V03X_H/2-30 && abs(num_u_l-num_u_r) <=12 && huandao_flag == 0)
+	 //正入十字后
+	else if (num_u_l >= MT9V03X_H/2-40 && num_u_r >= MT9V03X_H/2-40 && huandao_flag == 0 && Zebra_stop_flag == 0)
 	{
-		if (abs(num_u_l - num_u_r) < 12)
+		if (num_d_l > 0 && num_d_r == 0 && abs(num_d_l-num_u_l) >= 12)
+		{
+			xieji(num_u_l, num_d_l, road_left[num_u_l], road_left[num_d_l],road_left);
+			least_squares(num_u_r-7,num_u_r-2,road_right,&xielv_r,&jieju_r);
+            for (i = num_u_r - 2; i < MT9V03X_H - 1; i++)
+            {
+                road_right[i] = xielv_r * i + jieju_r;
+                if (road_right[i] <= 1)
+                    road_right[i] = MT9V03X_W - 2;
+                else if (road_right[i] >= MT9V03X_W - 2)
+                    road_right[i] = MT9V03X_W - 2;
+            }
+			crossing_flag_help = 1;
+		}
+		else if (num_d_l == 0 && num_d_r > 0 && abs(num_d_r - num_u_r) >= 12)
+		{
+			xieji(num_u_r, num_d_r, road_right[num_u_r], road_right[num_d_r],road_right);
+			least_squares(num_u_l-7,num_u_l-2,road_left,&xielv_l,&jieju_l);
+			for (i = num_u_l - 2; i < MT9V03X_H - 1; i++)
+            {
+                road_left[i] = xielv_l * i + jieju_l;
+                if (road_left[i] <= 1)
+                    road_left[i] = 1;
+                else if (road_left[i] >= MT9V03X_W - 2)
+                    road_left[i] = 1;
+            }
+			crossing_flag_help = 1;
+		}
+		else if (abs(num_u_l - num_u_r) < 30 && num_d_l == 0 && num_d_r == 0)
 		{
 			least_squares(num_u_l-15,num_u_l-5,road_left,&xielv_l,&jieju_l);
             // 补线并限制边界
@@ -1072,7 +1119,16 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
                 else if (road_right[i] >= MT9V03X_W - 2)
                     road_right[i] = MT9V03X_W - 2;
             }
-//			huandao_clear();
+			uint8 left_num_down_add = Find_Left_Down_Point(num_u_l-5,line+2,0);
+	        uint8 left_num_up_add = Find_Left_Up_Point(num_u_l-5,line+2,0);
+	        uint8 right_num_down_add = Find_Right_Down_Point(num_u_r-5,line+2,0);
+	        uint8 right_num_up_add = Find_Right_Up_Point(num_u_r-5,line+2,0);
+			if (left_num_down_add && left_num_up_add && right_num_down_add && right_num_up_add && road_left[left_num_down_add] > 25
+				&& road_left[left_num_up_add] > 35 && road_right[right_num_down_add] < MT9V03X_W - 25 && road_right[right_num_up_add] < MT9V03X_W-35)
+			{
+				xieji(left_num_up_add, left_num_down_add, road_left[left_num_up_add], road_left[left_num_down_add],road_left);
+				xieji(right_num_up_add, right_num_down_add, road_right[right_num_up_add], road_right[right_num_down_add],road_right);
+			}
 			crossing_flag_help = 1;
 		}
 	}
@@ -1139,10 +1195,21 @@ float find_mid_line_weight(void)
 //    last_mid_line = mid_line_value;
 ////	mid_line_value = center_line[70];
 	
-	for (uint8 i = MT9V03X_H/2-5; i < MT9V03X_H/2; i++)
+	if (line > qianzhan_value && line < MT9V03X_H-6)
 	{
-		weight_midline_sum += center_line[i];
+		for (uint8 i = line+1; i < line+6; i++)
+		{
+			weight_midline_sum += center_line[i];
+		}
 	}
+	else
+	{
+			for (uint8 i = qianzhan_value; i < qianzhan_value+5; i++)
+		{
+			weight_midline_sum += center_line[i];
+		}
+	}
+
 	
 	mid_line_value = (float)(weight_midline_sum / 5);
 	
@@ -1154,7 +1221,7 @@ void Zebra_crossing_handle(void)
 {
 	uint8 i ,j;
 	uint8 Zebra_crossing_num = 0;
-	for (i = 40; i <= 100; i+=10)
+	for (i = 0; i < qianzhan_value+7; i+=3)
 	{
 		for (j = 20; j < 168; j+=2)
 		{
@@ -1163,7 +1230,7 @@ void Zebra_crossing_handle(void)
 				Zebra_crossing_num++;
 			}
 		}
-		if (Zebra_crossing_num >= 10)
+		if (Zebra_crossing_num >= 8)
 		{
 			Zebra_stop_flag = 1;
 			break;

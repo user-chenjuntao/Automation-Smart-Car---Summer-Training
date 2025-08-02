@@ -58,9 +58,10 @@ int encoder_data_1 = 0;
 int encoder_data_2 = 0;
 int v1= 0;
 int v2= 0;
-int speed_base = 200;//122
-float speed_k = 0.4;//0.5
-int speed_limit = 30;//40
+int speed_base = 270;//122 245
+float speed_k = 0.50;//0.45
+int speed_limit = 50;//40
+int servo_test = SERVO_MOTOR_INIT;
 //uint8 stop_delay = 0;
 
 //uint8 image_threshold = 0;
@@ -170,8 +171,14 @@ int main(void)
 		}
 //		servo_pid_test();
 //		dynamic_pid_value_set();
-        menu_switch();
-		menu_display();
+
+		menu_switch();
+		if (car_go_flag == 0)
+		{
+			menu_display();
+		}
+
+        
 		
 		
 //		printf("\r\nIMU963RA gyro data:  x=%5d, y=%5d, z=%5d\r\n", imu963ra_gyro_x, imu963ra_gyro_y, imu963ra_gyro_z);
@@ -256,15 +263,15 @@ void pit_motor_handler (void)
 			car_go_flag = 0;
 			cursor = 2;
 		}
-		else if (Zebra_stop_flag == 1)
-		{
-			car_go_flag = 0;
-			cursor = 2;
-//			stop_delay = 1;
-		}
+//		else if (Zebra_stop_flag == 1)
+//		{
+//			car_go_flag = 0;
+//			cursor = 2;
+////			stop_delay = 1;
+//		}
 		else
 		{
-//			
+			
 			final_motor_control(speed_base, speed_k, speed_limit);
 //			stop_delay = 0;
 				

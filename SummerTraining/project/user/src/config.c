@@ -6,18 +6,18 @@ tagPID_T SRpid;
 
 PIDInitStruct SpeedPidInitStruct = 
 {
-	.fKp       = 1.30,     //.fKp     1.30     1.16
+	.fKp       = 1.10,     //.fKp     1.30     1.16
 	.fKi       = 0,     //.fKi
-	.fKd       = 23.0,     //.fKd    23.0     13.80
+	.fKd       = 7.0,     //.fKd    23.0     13.80
 	.fMax_Iout = 100,      //.fMax_Iout
 	.fMax_Out  = 150,       //.fMax_Out
-	.alpha     = 0.8
+	.alpha     = 0.9
 };
 
 PIDInitStruct SLPidInitStruct = 
 {
-	.fKp       = 11.7,     //.fKp     8.5       11.7
-	.fKi       = 2.15,     //.fKi     1.5       2.15
+	.fKp       = 9.7,     //.fKp     8.5       11.7      22.3
+	.fKi       = 2.05,     //.fKi     1.5       2.15      3.56
 	.fKd       = 0,     //.fKd
 	.fMax_Iout = 4000,      //.fMax_Iout
 	.fMax_Out  = 7000,       //.fMax_Out
@@ -26,8 +26,8 @@ PIDInitStruct SLPidInitStruct =
 
 PIDInitStruct SRPidInitStruct = 
 {
-	.fKp       = 11.6,     //.fKp          11.6
-	.fKi       = 2.15,     //.fKi          2.15
+	.fKp       = 8.6,     //.fKp          11.6       8.6
+	.fKi       = 2.0,     //.fKi          2.15       2.0
 	.fKd       = 0,     //.fKd
 	.fMax_Iout = 4000,      //.fMax_Iout
 	.fMax_Out  = 7000,       //.fMax_Out
