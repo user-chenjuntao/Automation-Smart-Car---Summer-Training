@@ -494,7 +494,7 @@ void menu_switch(void)
 					Speedpid.alpha += level[level_i];
 					break;
 				case 237:
-					Kp_value += level[level_i];
+					Kp_value += level[level_i]*0.001;
 					break;
 				case 238:
 					Kp_base += level[level_i];
@@ -563,7 +563,7 @@ void menu_switch(void)
 					Speedpid.alpha -= level[level_i];
 					break;
 				case 237:
-					Kp_value -= level[level_i];
+					Kp_value -= level[level_i]*0.001;
 					break;
 				case 238:
 					Kp_base -= level[level_i];

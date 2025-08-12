@@ -18,7 +18,7 @@
 #define THRESHOLD_MIN              255*2
 //#define BORDERLEFT                 1
 //#define BORDERRIGHT                254
-#define MID_W                      93
+#define MID_W                      94
 // 定义邻近拐点的阈值（行数差≤此值则合并，可根据实际调整）
 #define BREAKPOINT_MERGE_THRESHOLD 6
 #define LEFT_MAX                   4

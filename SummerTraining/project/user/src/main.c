@@ -58,9 +58,9 @@ int encoder_data_1 = 0;
 int encoder_data_2 = 0;
 int v1= 0;
 int v2= 0;
-int speed_base = 270;//122 245
-float speed_k = 0.50;//0.45
-int speed_limit = 50;//40
+int speed_base = 300;//122 245
+float speed_k = 0.90;//0.45
+int speed_limit = 95;//40
 int servo_test = SERVO_MOTOR_INIT;
 //uint8 stop_delay = 0;
 
@@ -243,6 +243,7 @@ void pit_servo_handler (void)
 {
 	if (car_go_flag)
 	{
+//		dynamic_pid_value_set();
 		Servo_control();
 	}
 	else

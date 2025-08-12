@@ -9,11 +9,11 @@ float line_error = 0;
 uint8 low_high_choose = 0;
 uint8 huandao_num_flag = 0;
 uint8 crossing_flag_help = 0;
-int straight_speed = 270;//200   240
-int turn_speed = 245;//160       185
-int yuanhuan_speed = 130;//125
-int left_right_choose = 0;
-uint8 qianzhan_value = 52;
+int straight_speed = 300;//200   240
+int turn_speed = 255;//160       185
+int yuanhuan_speed = 220;//125
+int left_right_choose = 1;                                                             //0 表示进左圆环，即反方向发车  1 表示进右圆环，即正方向发车
+uint8 qianzhan_value = 44;
 
 extern int speed_base;
 
@@ -887,6 +887,47 @@ void image_process(void)
 	{
 		final_mid_line = find_mid_line_weight();
 		line_error = final_mid_line - MID_W;
+//		if (fabs(line_error) <= 4)
+//		{
+//			line_error = 0.5*line_error;
+//		}
+//		else if (fabs(line_error) > 4 && fabs(line_error) < 10)
+//		{
+//			line_error = 0.8*line_error;
+//		}
+//		else if (fabs(line_error) >= 20 && fabs(line_error) < 25)
+//		{
+//			line_error = 1.1*line_error;
+//		}
+//		else if (fabs(line_error) >= 25 && fabs(line_error) < 30)
+//		{
+//			line_error = 1.15*line_error;
+//		}
+//		else if (fabs(line_error) >= 30 && fabs(line_error) < 40)
+//		{
+//			line_error = 1.20*line_error;
+//		}
+//		else if (fabs(line_error) >= 40 && fabs(line_error) < 50)
+//		{
+//			line_error = 1.25*line_error;
+//		}
+//		else if (fabs(line_error) >= 50 && fabs(line_error) < 60)
+//		{
+//			line_error = 1.30*line_error;
+//		}
+//		else if (fabs(line_error) >= 60)
+//		{
+//			line_error = 1.35*line_error;
+//		}
+		if (fabs(line_error) < 10)
+		{
+			line_error = (fabs(line_error)*0.1)*line_error;
+		}
+		else if (fabs(line_error) >= 15)
+		{
+			line_error = (1 + 0.0075*(fabs(line_error) - 15))*line_error;
+		}
+		
 	}
 	else  if (Zebra_stop_flag == 1)
 	{
@@ -970,7 +1011,7 @@ void speed_strategy(void)
 {
 	if (huandao_flag == 0)
 	{
-		if (fabs(line_error) <= 10)
+		if (fabs(line_error) <= 9)
 		{
 			speed_base = straight_speed;
 		}
@@ -1132,6 +1173,14 @@ void crossing_add(uint8 num_d_l, uint8 num_u_l, uint8 num_d_r, uint8 num_u_r)
 			crossing_flag_help = 1;
 		}
 	}
+	else if (num_u_l && num_d_l && huandao_flag == 0 && Zebra_stop_flag == 0 && Right_Lost_Time > (MT9V03X_H-line)*0.65)
+	{
+		xieji(num_u_l, num_d_l, road_left[num_u_l], road_left[num_d_l],road_left);
+	}
+	else if (num_u_r && num_d_r && huandao_flag == 0 && Zebra_stop_flag == 0 && Left_Lost_Time > (MT9V03X_H-line)*0.65)
+	{
+		xieji(num_u_r, num_d_r, road_right[num_u_r], road_right[num_d_r],road_right);
+	}
 }
 
 uint8 my_max(uint8 num1, uint8 num2)
@@ -1211,7 +1260,9 @@ float find_mid_line_weight(void)
 	}
 
 	
-	mid_line_value = (float)(weight_midline_sum / 5);
+	mid_line = (float)(weight_midline_sum / 5);
+	mid_line_value = last_mid_line * 0.2 + mid_line * 0.8; // 互补滤波
+	last_mid_line = mid_line_value;
 	
     return mid_line_value;
 }
@@ -1673,7 +1724,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_1++;
 			if (exit_cnt_1 >= 1)
 			{
-				speed_base = 130;;
+				speed_base = yuanhuan_speed;
 				huandao_flag = 1;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1686,7 +1737,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_2_1++;
 			if (exit_cnt_2_1 >= 3)
 			{
-				speed_base = 130;
+				speed_base = yuanhuan_speed;
 				huandao_flag = 2;
 				exit_cnt_1 = 0;
 				exit_cnt_2_1 = 0;
@@ -1709,7 +1760,7 @@ void yuanhuan_right_in_handle(void)
 			exit_cnt_2_2++;
 			if (exit_cnt_2_2 >= 1)
 			{
-				speed_base = 130;
+				speed_base = yuanhuan_speed;
 				huandao_flag = 2;
 				exit_cnt_2_2 = 0;
 			}
@@ -1819,7 +1870,8 @@ void yuanhuan_right_in_handle(void)
 			if (exit_cnt_0 >=1)
 			{
 				huandao_flag = 0;
-				huandao_num_flag = 10;
+//				huandao_num_flag = 10;
+				speed_base = straight_speed;
 				exit_cnt_0 = 0;
 			}
 			
@@ -1997,11 +2049,10 @@ void yuanhuan_left_in_handle(void)
 			if (exit_cnt_0 >=1)
 			{
 				huandao_flag = 0;
-				speed_base = 185;
+				speed_base = straight_speed;
 //				huandao_num_flag = 10;
 				exit_cnt_0 = 0;
 			}
-			
 		}
 		else
 		{
@@ -2011,6 +2062,5 @@ void yuanhuan_left_in_handle(void)
 		{
 			xieji(70, MT9V03X_H-5, 60, 45,road_left);// || u_num > 140
 		}
-		
 	}
 }
